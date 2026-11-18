@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:studease/models/generated_content.dart';
-import 'package:studease/models/language_course.dart';
 import 'package:studease/services/ai_generator_service.dart';
 
 void main() {
@@ -150,32 +149,6 @@ void main() {
       expect(offline.sourceLabel, 'Generated offline (AI unavailable)');
       expect(offline.isEmpty, isTrue);
       expect(offline.itemCount, 0);
-    });
-  });
-
-  group('LanguageCatalog', () {
-    test('ships Japanese, Spanish and French decks', () {
-      expect(
-        LanguageCatalog.courses.map((LanguageCourse course) => course.name),
-        <String>['Japanese', 'Spanish', 'French'],
-      );
-
-      for (final LanguageCourse course in LanguageCatalog.courses) {
-        expect(course.phrases.length, greaterThanOrEqualTo(3));
-        expect(course.quiz.isValid, isTrue);
-        expect(course.quiz.options[course.quiz.correctIndex], isNotEmpty);
-        expect(course.chipLabel, contains(course.flag));
-        for (final LanguagePhrase phrase in course.phrases) {
-          expect(phrase.word.trim(), isNotEmpty);
-          expect(phrase.meaning.trim(), isNotEmpty);
-        }
-      }
-    });
-
-    test('falls back to the first course for unknown ids', () {
-      expect(LanguageCatalog.byId('klingon').id, LanguageCatalog.japaneseId);
-      expect(LanguageCatalog.byId(LanguageCatalog.spanishId).name, 'Spanish');
-      expect(LanguageCatalog.defaultCourse.name, 'Japanese');
     });
   });
 }

@@ -362,7 +362,7 @@ class _ModuleGrid extends StatelessWidget {
               child: _ModuleTile(
                 icon: Icons.public_rounded,
                 title: 'Resources',
-                caption: 'Books & languages',
+                caption: 'Categorized books & PDFs',
                 accent: context.surfaces.successInk,
                 soft: context.surfaces.successSoft,
                 onTap: () => onOpenTab(4),

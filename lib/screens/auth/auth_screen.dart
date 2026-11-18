@@ -395,8 +395,8 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Each completed lesson, deck, quiz, book session or language '
-            'exercise counts toward your goal.',
+            'Each completed lesson, deck, quiz or book session counts toward '
+            'your goal.',
             style: context.caption.copyWith(fontSize: 9.5),
           ),
         ],

@@ -319,8 +319,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Each completed lesson, deck, quiz, book session or language '
-                'exercise counts as one task.',
+                'Each completed lesson, deck, quiz or book session counts as '
+                'one task.',
                 style: context.caption.copyWith(fontSize: 9.5),
               ),
             ],

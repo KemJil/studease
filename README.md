@@ -3,7 +3,7 @@
 Flutter (Material 3) study app for **ICS26011 · Group 3**
 (Charls Daniel Atilares, John Stanley Dave, Jim Michael Ducut).
 
-Courses · Flashcards & Quizzes (AI or manual) · Streak & Calendar · Books & Languages.
+Courses · Flashcards & Quizzes (AI or manual) · Streak & Calendar · Books & PDFs.
 
 ## Stack
 
@@ -30,12 +30,11 @@ The auth screen has **⚡ Try Demo Account** — one tap signs in (or creates) t
 `demo.student@studease.app` account and seeds lessons, decks, a quiz and five open-access books.
 Rotate/delete that account after the project defense.
 
+
 ## Project docs
 
-- `.clinerules/studease.md` — engineering rules (AI model policy, PDF rules, progress pipeline).
-- `memory-bank/` — project brief, system patterns, active context, progress log.
-- `docs/` — original prototype (`index.html`), user-flow diagram and the ICS26011 proposal.
-
+- `docs/` — interactive UI prototype (`index.html`), user-flow diagram, and the ICS26011 project proposal.
+- `firestore.rules` & `firebase.json` — owner-scoped Cloud Firestore security rules and Firebase configuration.
 ## Verify
 
 ```bash

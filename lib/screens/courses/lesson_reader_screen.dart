@@ -318,8 +318,11 @@ class _LessonReaderScreenState extends State<LessonReaderScreen> {
                 lesson.title,
                 style: context.screenTitle.copyWith(fontSize: 17),
               ),
-              const SizedBox(height: 10),
-              Text(lesson.summary, style: context.bodyText),
+              // Lessons created from the 4-field form carry no summary.
+              if (lesson.summary.trim().isNotEmpty) ...<Widget>[
+                const SizedBox(height: 10),
+                Text(lesson.summary, style: context.bodyText),
+              ],
             ],
           ),
         ),

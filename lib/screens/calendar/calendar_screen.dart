@@ -169,8 +169,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Every completed lesson, flashcard deck, quiz, book session or '
-          'language exercise lights up this calendar.',
+          'Every completed lesson, flashcard deck, quiz or book session '
+          'lights up this calendar.',
           textAlign: TextAlign.center,
           style: context.caption.copyWith(fontSize: 9.5),
         ),
@@ -446,8 +446,8 @@ class _DayLogCardState extends State<_DayLogCard> {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            'Finish a lesson, deck, quiz, book session or '
-                            'language exercise to fill this day.',
+                            'Finish a lesson, deck, quiz or book session to '
+                            'fill this day.',
                             textAlign: TextAlign.center,
                             style: context.caption.copyWith(fontSize: 9.5),
                           ),

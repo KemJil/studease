@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../theme/app_surfaces.dart';
 
 import '../../core/course_grouping.dart';
+import '../../core/lesson_draft.dart';
 import '../../models/course.dart';
 import '../../models/deck.dart';
 import '../../models/quiz.dart';
@@ -17,6 +18,12 @@ import '../../widgets/toast.dart';
 
 /// **⚙️ Manage Lessons** — adds a lesson (with an optional local PDF) inside
 /// one subject course, or deletes an existing lesson.
+///
+/// The add form is locked to the four inputs in `docs/index.html`
+/// (`memory-bank/appFlow.md`): Lesson Title · Estimated Read Time ·
+/// Lesson Notes · Lesson PDF Handout (Optional). `folder`, `summary` and
+/// `formulas` are derived internally so `LessonReaderScreen` and previously
+/// created lessons keep working.
 class ManageLessonsSheet extends StatefulWidget {
   const ManageLessonsSheet({
     super.key,
@@ -52,16 +59,10 @@ class _ManageLessonsSheetState extends State<ManageLessonsSheet> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _title = TextEditingController();
-  final TextEditingController _folder = TextEditingController(
-    text: 'My Module',
-  );
-  final TextEditingController _summary = TextEditingController();
   final TextEditingController _notes = TextEditingController();
   final TextEditingController _duration = TextEditingController(
-    text: '10 min read',
+    text: LessonDraft.defaultDurationLabel,
   );
-  final TextEditingController _formulaLabel = TextEditingController();
-  final TextEditingController _formulaExpr = TextEditingController();
 
   late Stream<List<Course>> _lessonStream = _courses.watchCourses(widget.uid);
   Uint8List? _pdfBytes;
@@ -71,12 +72,8 @@ class _ManageLessonsSheetState extends State<ManageLessonsSheet> {
   @override
   void dispose() {
     _title.dispose();
-    _folder.dispose();
-    _summary.dispose();
     _notes.dispose();
     _duration.dispose();
-    _formulaLabel.dispose();
-    _formulaExpr.dispose();
     super.dispose();
   }
 
@@ -144,26 +141,24 @@ class _ManageLessonsSheetState extends State<ManageLessonsSheet> {
     setState(() => _saving = true);
     try {
       final String title = _title.text.trim();
+      // Only the four prototype inputs are authored here; every other lesson
+      // field is derived so Firestore documents (and the reader) keep the same
+      // shape as before (`docs/index.html` `handleAddLesson`).
       await _courses.createLesson(
         uid: widget.uid,
         course: widget.course,
         title: title,
-        summary: _summary.text,
-        folder: _folder.text,
-        notes: _notes.text.split('\n'),
-        formulas: <CourseFormula>[
-          CourseFormula(label: _formulaLabel.text, expr: _formulaExpr.text),
-        ],
-        durationLabel: _duration.text,
+        summary: '',
+        folder: widget.course.isUncategorized ? '' : widget.course.name,
+        notes: LessonDraft.notesOr(_notes.text, title).split('\n'),
+        formulas: const <CourseFormula>[],
+        durationLabel: LessonDraft.durationOr(_duration.text),
         pdfBytes: _pdfBytes,
         pdfFileName: _pdfName,
       );
       if (!mounted) return;
       _title.clear();
-      _summary.clear();
       _notes.clear();
-      _formulaLabel.clear();
-      _formulaExpr.clear();
       setState(() {
         _saving = false;
         _pdfBytes = null;
@@ -305,10 +300,11 @@ class _ManageLessonsSheetState extends State<ManageLessonsSheet> {
           children: <Widget>[
             Text('New lesson', style: context.cardTitle.copyWith(fontSize: 12)),
             const SizedBox(height: 10),
+            // 1 of 4 — Lesson Title (required, `docs/index.html` parity).
             StudEaseTextField(
               controller: _title,
-              label: 'Lesson title',
-              hint: 'e.g. Systems of Linear Equations',
+              label: 'Lesson Title',
+              hint: 'e.g. Integration by Substitution',
               prefixIcon: Icons.menu_book_rounded,
               validator: (String? value) =>
                   (value == null || value.trim().length < 3)
@@ -316,51 +312,25 @@ class _ManageLessonsSheetState extends State<ManageLessonsSheet> {
                   : null,
             ),
             const SizedBox(height: 10),
-            StudEaseTextField(
-              controller: _folder,
-              label: 'Course / Folder',
-              hint: 'e.g. Algebra & Functions',
-              prefixIcon: Icons.folder_open_rounded,
-            ),
-            const SizedBox(height: 10),
-            StudEaseTextField(
-              controller: _summary,
-              label: 'Short summary',
-              hint: 'What will you learn in this lesson?',
-              maxLines: 2,
-            ),
-            const SizedBox(height: 10),
-            StudEaseTextField(
-              controller: _notes,
-              label: 'Structured study notes',
-              hint: 'One bullet point per line',
-              maxLines: 4,
-            ),
-            const SizedBox(height: 10),
+            // 2 of 4 — Estimated Read Time.
             StudEaseTextField(
               controller: _duration,
-              label: 'Read time',
-              hint: '10 min read',
+              label: 'Estimated Read Time',
+              hint: LessonDraft.defaultDurationLabel,
               prefixIcon: Icons.schedule_rounded,
             ),
-            const SizedBox(height: 12),
-            Text(
-              'KEY FORMULA / CONCEPT (OPTIONAL)',
-              style: context.sectionLabel,
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
+            // 3 of 4 — Lesson Notes (multiline textarea).
             StudEaseTextField(
-              controller: _formulaLabel,
-              label: 'Formula label',
-              hint: 'e.g. Standard Form',
-            ),
-            const SizedBox(height: 8),
-            StudEaseTextField(
-              controller: _formulaExpr,
-              label: 'Expression',
-              hint: 'e.g. ax² + bx + c = 0',
+              controller: _notes,
+              label: 'Lesson Notes',
+              hint: 'Write key concepts, definitions, or formulas...',
+              maxLines: 4,
             ),
             const SizedBox(height: 12),
+            // 4 of 4 — Lesson PDF Handout (Optional).
+            Text('Lesson PDF Handout (Optional)', style: context.sectionLabel),
+            const SizedBox(height: 8),
             _pdfPicker(),
             const SizedBox(height: 14),
             FilledButton(
@@ -460,7 +430,7 @@ class _ManageLessonsSheetState extends State<ManageLessonsSheet> {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'Attach a PDF (optional)',
+              'Upload lecture slides or study handouts',
               style: context.caption.copyWith(fontSize: 10.5),
             ),
           ),
