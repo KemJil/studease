@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "445947617305",
+    "project_id": "studease-27e63kemjil",
+    "storage_bucket": "studease-27e63kemjil.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445947617305:android:947fe3ad6ea37e84648a88",
+        "android_client_info": {
+          "package_name": "com.example.studease"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqPA2QI6utKWmq0SViBQJkJMDKtBMN2js"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

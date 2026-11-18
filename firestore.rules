@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// StudEase — every document lives under /users/{uid} and only its owner may
+// read or write it. No Cloud Storage rules are needed (PDFs are never uploaded).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+  }
+}

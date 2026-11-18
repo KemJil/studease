@@ -1,0 +1,3506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudEase — Course Structure & AI Prototype</title>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            canvas: '#F8FAFC',
+            ink: '#0F172A',
+            muted: '#64748B',
+            brand: '#4F46E5',
+            emeraldAccent: '#10B981',
+            amberAccent: '#F59E0B',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* Base typography & smooth scrolling */
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top left, #EEF2FF 0%, #F1F5F9 45%, #E2E8F0 100%);
+      color: #0F172A;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Hide scrollbars inside phone viewport for native mobile feel */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 3D Flashcard Flip Animation */
+    .flip-perspective {
+      perspective: 1000px;
+    }
+    .flip-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-style: preserve-3d;
+    }
+    .flip-inner.is-flipped {
+      transform: rotateY(180deg);
+    }
+    .flip-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .flip-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Modal bottom-sheet entrance */
+    @keyframes sheetUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-sheet {
+      animation: sheetUp 0.22s ease-out forwards;
+    }
+
+    /* Toast entrance */
+    @keyframes toastPop {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 12px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+    .animate-toast {
+      animation: toastPop 0.2s ease-out forwards;
+    }
+
+    /* Dark Mode Overrides inside Phone Frame */
+    #phone-frame.dark-mode {
+      background-color: #0B1120;
+    }
+    #phone-frame.dark-mode #status-bar {
+      background-color: #0B1120;
+      color: #E2E8F0;
+    }
+    #phone-frame.dark-mode #status-bar .border-slate-800 {
+      border-color: #E2E8F0;
+    }
+    #phone-frame.dark-mode #status-bar .bg-slate-800 {
+      background-color: #E2E8F0;
+    }
+    #phone-frame.dark-mode #bottom-nav {
+      background-color: #0F172A;
+      border-color: #1E293B;
+    }
+    #phone-frame.dark-mode .bg-white {
+      background-color: #111827;
+    }
+    #phone-frame.dark-mode .bg-slate-50,
+    #phone-frame.dark-mode .bg-slate-100 {
+      background-color: #1E293B;
+    }
+    #phone-frame.dark-mode .bg-slate-200\/75 {
+      background-color: #1E293B;
+    }
+    #phone-frame.dark-mode .border-\[\#E2E8F0\],
+    #phone-frame.dark-mode .border-slate-200,
+    #phone-frame.dark-mode .border-slate-200\/80,
+    #phone-frame.dark-mode .border-slate-200\/90,
+    #phone-frame.dark-mode .border-slate-100 {
+      border-color: #263244;
+    }
+    #phone-frame.dark-mode .text-\[\#0F172A\],
+    #phone-frame.dark-mode .text-slate-900,
+    #phone-frame.dark-mode .text-slate-800,
+    #phone-frame.dark-mode .text-slate-700 {
+      color: #F1F5F9;
+    }
+    #phone-frame.dark-mode .text-\[\#64748B\],
+    #phone-frame.dark-mode .text-slate-600,
+    #phone-frame.dark-mode .text-slate-500 {
+      color: #94A3B8;
+    }
+    #phone-frame.dark-mode input,
+    #phone-frame.dark-mode textarea,
+    #phone-frame.dark-mode select {
+      background-color: #1E293B;
+      color: #F8FAFC;
+      border-color: #334155;
+    }
+    #phone-frame.dark-mode .bg-indigo-50,
+    #phone-frame.dark-mode .bg-indigo-50\/50,
+    #phone-frame.dark-mode .bg-indigo-50\/70,
+    #phone-frame.dark-mode .bg-indigo-50\/80 {
+      background-color: rgba(79, 70, 229, 0.22);
+    }
+    #phone-frame.dark-mode .border-indigo-100,
+    #phone-frame.dark-mode .border-indigo-200 {
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+    #phone-frame.dark-mode .text-\[\#4F46E5\],
+    #phone-frame.dark-mode .text-indigo-700,
+    #phone-frame.dark-mode .text-indigo-600 {
+      color: #A5B4FC;
+    }
+    #phone-frame.dark-mode .bg-emerald-50,
+    #phone-frame.dark-mode .bg-emerald-50\/50 {
+      background-color: rgba(16, 185, 129, 0.18);
+    }
+    #phone-frame.dark-mode .border-emerald-200 {
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+    #phone-frame.dark-mode .text-emerald-700,
+    #phone-frame.dark-mode .text-emerald-800,
+    #phone-frame.dark-mode .text-emerald-600 {
+      color: #6EE7B7;
+    }
+    #phone-frame.dark-mode .bg-amber-50,
+    #phone-frame.dark-mode .bg-amber-100 {
+      background-color: rgba(245, 158, 11, 0.2);
+    }
+    #phone-frame.dark-mode .border-amber-200 {
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+    #phone-frame.dark-mode .text-amber-700,
+    #phone-frame.dark-mode .text-amber-800 {
+      color: #FCD34D;
+    }
+    #phone-frame.dark-mode .bg-rose-50,
+    #phone-frame.dark-mode .bg-rose-50\/60 {
+      background-color: rgba(244, 63, 94, 0.18);
+    }
+    #phone-frame.dark-mode .border-rose-200 {
+      border-color: rgba(244, 63, 94, 0.35);
+    }
+    #phone-frame.dark-mode .text-rose-600,
+    #phone-frame.dark-mode .text-rose-700,
+    #phone-frame.dark-mode .text-rose-900 {
+      color: #FDA4AF;
+    }
+    #phone-frame.dark-mode .bg-\[\#4F46E5\],
+    #phone-frame.dark-mode .bg-indigo-600 {
+      background-color: #4F46E5 !important;
+      color: #FFFFFF !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start sm:justify-center sm:py-6 sm:px-4">
+
+  <!-- Interactive Prototype Guide Banner (outside the 412px phone frame) -->
+  <div class="w-full max-w-[412px] bg-white/90 backdrop-blur border border-slate-200/90 sm:rounded-2xl px-4 py-2.5 mb-0 sm:mb-4 shadow-sm">
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-600 text-white text-xs font-bold">UI</span>
+        <span class="text-xs sm:text-sm font-bold text-slate-900">StudEase Interactive Prototype</span>
+      </div>
+      <button type="button" onclick="resetDemoState()" class="text-[11px] font-semibold text-slate-500 hover:text-indigo-600 underline">
+        Reset Demo Data
+      </button>
+    </div>
+  </div>
+
+  <!-- Sleek Centered 412px Mobile Phone Frame -->
+  <div id="phone-frame" class="relative w-full max-w-[412px] h-[100dvh] sm:h-[820px] bg-[#F8FAFC] sm:rounded-[38px] sm:border-[8px] sm:border-slate-900 sm:shadow-[0_25px_70px_-15px_rgba(15,23,42,0.28)] flex flex-col overflow-hidden transition-colors">
+
+    <!-- Simulated Mobile Status Bar -->
+    <div id="status-bar" class="shrink-0 bg-[#F8FAFC] px-6 pt-2.5 pb-1.5 flex items-center justify-between text-[11px] font-bold text-slate-800 select-none transition-colors">
+      <span>9:41</span>
+      <div class="w-20 h-4 bg-slate-900 rounded-full"></div>
+      <div class="flex items-center gap-1.5">
+        <span>5G</span>
+        <div class="w-5 h-2.5 border border-slate-800 rounded-[3px] p-[1px] flex items-center">
+          <div class="w-full h-full bg-slate-800 rounded-[1px]"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Scrollable Screen Viewport -->
+    <main id="screen-viewport" class="flex-1 overflow-y-auto no-scrollbar px-4 pb-6"></main>
+
+    <!-- Bottom Navigation Bar (5 Tabs — hidden on Login/Sign Up & Profile screens) -->
+    <nav id="bottom-nav" class="hidden shrink-0 bg-white border-t border-slate-200/90 px-2 py-2 grid grid-cols-5 gap-1 transition-colors"></nav>
+
+    <!-- In-Phone Modal Root -->
+    <div id="modal-root" class="hidden absolute inset-0 z-40 bg-slate-950/45 backdrop-blur-[1px] flex items-end sm:items-center justify-center p-0 sm:p-3" onclick="if (event.target === this) closeModal();"></div>
+
+    <!-- In-Phone Floating Toast -->
+    <div id="toast-root" class="hidden pointer-events-none absolute bottom-20 left-1/2 -translate-x-1/2 z-50 w-max max-w-[90%]">
+      <div id="toast-message" class="animate-toast bg-slate-900 text-white text-xs font-bold px-3.5 py-2.5 rounded-2xl shadow-lg flex items-center gap-2 border border-slate-700"></div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. COLOR TOKENS & HELPERS
+    // =========================================================================
+    const COLOR_MAP = {
+      indigo: {
+        label: 'Indigo',
+        bg: 'bg-indigo-50',
+        text: 'text-indigo-700',
+        border: 'border-indigo-200',
+        solid: 'bg-indigo-600',
+        ring: 'ring-indigo-500',
+      },
+      emerald: {
+        label: 'Emerald',
+        bg: 'bg-emerald-50',
+        text: 'text-emerald-700',
+        border: 'border-emerald-200',
+        solid: 'bg-emerald-600',
+        ring: 'ring-emerald-500',
+      },
+      amber: {
+        label: 'Amber',
+        bg: 'bg-amber-50',
+        text: 'text-amber-700',
+        border: 'border-amber-200',
+        solid: 'bg-amber-500',
+        ring: 'ring-amber-500',
+      },
+      rose: {
+        label: 'Rose',
+        bg: 'bg-rose-50',
+        text: 'text-rose-700',
+        border: 'border-rose-200',
+        solid: 'bg-rose-600',
+        ring: 'ring-rose-500',
+      },
+      sky: {
+        label: 'Sky',
+        bg: 'bg-sky-50',
+        text: 'text-sky-700',
+        border: 'border-sky-200',
+        solid: 'bg-sky-600',
+        ring: 'ring-sky-500',
+      },
+      violet: {
+        label: 'Violet',
+        bg: 'bg-violet-50',
+        text: 'text-violet-700',
+        border: 'border-violet-200',
+        solid: 'bg-violet-600',
+        ring: 'ring-violet-500',
+      },
+    };
+
+    let idCounter = 100;
+    function uid(prefix = 'id') {
+      idCounter += 1;
+      return `${prefix}_${idCounter}`;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getCourse(courseId) {
+      if (!courseId) return null;
+      return state.courses.find((c) => c.id === courseId) || null;
+    }
+
+    function getCourseBadgeHtml(courseId, extraClasses = '') {
+      const course = getCourse(courseId);
+      if (!course) {
+        return `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 ${extraClasses}">📂 Uncategorized</span>`;
+      }
+      const theme = COLOR_MAP[course.color] || COLOR_MAP.indigo;
+      return `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${theme.bg} ${theme.text} border ${theme.border} ${extraClasses}">📘 ${escapeHtml(course.name)}</span>`;
+    }
+
+    function buildCourseOptionsHtml(selectedCourseId) {
+      const courseOpts = state.courses
+        .map(
+          (c) =>
+            `<option value="${escapeHtml(c.id)}" ${selectedCourseId === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`
+        )
+        .join('');
+      return `
+        ${courseOpts}
+        <option value="" ${!selectedCourseId ? 'selected' : ''}>Uncategorized</option>
+      `;
+    }
+
+    // =========================================================================
+    // 2. PRELOADED INITIAL STATE
+    // =========================================================================
+    function createInitialState() {
+      return {
+        isAuthenticated: false, // Starts at Login / Sign Up screen
+        authMode: 'login', // 'login' | 'signup'
+        user: {
+          name: 'Charls Daniel Atilares',
+          email: 'charlsdaniel.atilares@studease.app',
+          level: 'Student',
+        },
+        activeTab: 'home', // Post-login default tab
+        subView: null, // null | 'profile'
+        activeCourseId: null, // null = Courses main list; string = Course Detail View
+        toolsSubTab: 'flashcards', // 'flashcards' | 'quizzes' (Activities completely removed)
+        toolsCourseFilter: 'all', // 'all' | 'uncategorized' | courseId
+        resourcesCourseFilter: 'all', // 'all' | 'uncategorized' | courseId
+        streakCount: 5,
+        bestStreak: 12,
+        totalSessions: 28,
+        dailyGoalCompleted: 1,
+        dailyGoalTarget: 3,
+        reminderEnabled: true,
+        reminderTime: '19:30',
+        soundEffectsEnabled: true,
+        soundVolume: 75, // 0 - 100
+        darkMode: false,
+        selectedCalendarDay: 18,
+        studyDays: [3, 4, 6, 8, 9, 11, 14, 15, 16, 17, 18],
+
+        // 1. Courses
+        courses: [
+          {
+            id: 'math',
+            name: 'Mathematics',
+            color: 'indigo',
+            desc: 'Algebra, Calculus & Functions',
+            lessons: [
+              {
+                id: 'l_math_1',
+                title: 'Quadratic Equations & Discriminants',
+                readTime: '12 min read',
+                completed: false,
+                pdfAttachment: {
+                  fileName: 'Quadratic_Equations_Handout.pdf',
+                  fileSize: '1.4 MB',
+                  objectUrl: null,
+                  previewText:
+                    'Page 1 of 6 • Worked derivations of the quadratic formula by completing the square, discriminant root classification charts, and 10 practice problems.',
+                },
+                notes:
+                  'A quadratic equation has the standard form ax² + bx + c = 0 where a ≠ 0.\n\nThe discriminant Δ = b² - 4ac reveals the nature of the roots:\n• Δ > 0: Two distinct real roots\n• Δ = 0: One repeated real root (vertex touches x-axis)\n• Δ < 0: Two complex conjugate roots',
+              },
+              {
+                id: 'l_math_2',
+                title: 'Derivatives & Power Rule Essentials',
+                readTime: '15 min read',
+                completed: false,
+                pdfAttachment: null,
+                notes:
+                  'The derivative f′(x) represents the instantaneous rate of change of a function and the slope of its tangent line.\n\nPower Rule: d/dx [xⁿ] = n · xⁿ⁻¹\nConstant Rule: d/dx [c] = 0\nSum Rule: (f + g)′ = f′ + g′',
+              },
+            ],
+          },
+          {
+            id: 'science',
+            name: 'Science',
+            color: 'emerald',
+            desc: 'Cell Biology & Classical Physics',
+            lessons: [
+              {
+                id: 'l_sci_1',
+                title: 'Cellular Respiration & ATP Synthesis',
+                readTime: '14 min read',
+                completed: false,
+                pdfAttachment: null,
+                notes:
+                  'Cellular respiration harvests chemical energy from glucose to synthesize ATP.\n\n1. Glycolysis (Cytosol): Splits glucose into 2 pyruvate, yielding 2 net ATP.\n2. Krebs Cycle (Mitochondrial Matrix): Oxidizes acetyl-CoA, producing NADH and FADH₂.\n3. Oxidative Phosphorylation (Inner Membrane): Electron transport chain drives ATP synthase (~30–32 ATP).',
+              },
+              {
+                id: 'l_sci_2',
+                title: "Newton's Laws of Motion & Free-Body Diagrams",
+                readTime: '10 min read',
+                completed: false,
+                pdfAttachment: null,
+                notes:
+                  "First Law (Inertia): Objects maintain constant velocity unless acted upon by a net external force.\nSecond Law: F_net = m · a.\nThird Law: Every force exerted by body A on B has an equal and opposite reaction force from B on A.",
+              },
+            ],
+          },
+          {
+            id: 'english',
+            name: 'English',
+            color: 'amber',
+            desc: 'Academic Writing & Rhetoric',
+            lessons: [
+              {
+                id: 'l_eng_1',
+                title: 'Thesis Statements & Rhetorical Appeals',
+                readTime: '11 min read',
+                completed: false,
+                pdfAttachment: null,
+                notes:
+                  'A strong analytical thesis states a clear, debatable claim and previews the reasoning structure.\n\nRhetorical Triangle:\n• Ethos: Appeal to speaker credibility and trustworthiness.\n• Pathos: Appeal to audience emotion and shared values.\n• Logos: Appeal to evidence, statistics, and logical deduction.',
+              },
+            ],
+          },
+        ],
+
+        // 2. Flashcard Decks (courseId: null => "Uncategorized")
+        decks: [
+          {
+            id: 'd_math_1',
+            title: 'Quadratic & Calculus Formulas',
+            courseId: 'math',
+            cards: [
+              { q: 'Quadratic Formula', a: 'x = (-b ± √(b² - 4ac)) / 2a' },
+              { q: 'Discriminant (Δ)', a: 'Δ = b² - 4ac; determines the number of real roots.' },
+              { q: 'Power Rule for Derivatives', a: 'd/dx [xⁿ] = n · xⁿ⁻¹' },
+              { q: 'Chain Rule', a: 'd/dx [f(g(x))] = f′(g(x)) · g′(x)' },
+              { q: 'Slope of Tangent Line', a: 'Equal to the first derivative f′(a) evaluated at x = a.' },
+              { q: 'Vertex x-coordinate of Parabola', a: 'x = -b / (2a)' },
+            ],
+          },
+          {
+            id: 'd_sci_1',
+            title: 'Cell Organelles & ATP',
+            courseId: 'science',
+            cards: [
+              { q: 'Mitochondria', a: 'Double-membrane organelle where aerobic cellular respiration produces ATP.' },
+              { q: 'Ribosome', a: 'Molecular complex that translates mRNA sequences into polypeptide chains.' },
+              { q: 'Osmosis', a: 'Net diffusion of water across a selectively permeable membrane toward higher solute concentration.' },
+              { q: 'Glycolysis Location', a: 'Takes place in the cytosol and does not require oxygen.' },
+              { q: 'ATP Synthase', a: 'Enzyme powered by a proton gradient to phosphorylate ADP into ATP.' },
+              { q: 'Chloroplast', a: 'Plant organelle housing chlorophyll where light energy converts to chemical energy.' },
+              { q: 'Homeostasis', a: 'Dynamic maintenance of stable internal conditions in a living organism.' },
+              { q: 'Catalyst / Enzyme', a: 'Lowers activation energy to accelerate biochemical reactions without being consumed.' },
+            ],
+          },
+          {
+            id: 'd_eng_1',
+            title: 'Rhetorical Devices Quick Deck',
+            courseId: 'english',
+            cards: [
+              { q: 'Ethos', a: 'Rhetorical appeal grounded in the speaker’s authority, ethics, or credibility.' },
+              { q: 'Pathos', a: 'Rhetorical appeal targeting the audience’s emotions, empathy, or values.' },
+              { q: 'Logos', a: 'Rhetorical appeal built on logic, factual evidence, and structured reasoning.' },
+              { q: 'Juxtaposition', a: 'Placing two contrasting ideas or images side by side to highlight differences.' },
+              { q: 'Anaphora', a: 'Deliberate repetition of a word or phrase at the start of successive clauses.' },
+            ],
+          },
+        ],
+
+        // 3. Quizzes (courseId: null => "Uncategorized")
+        quizzes: [
+          {
+            id: 'q_math_1',
+            title: 'Algebra & Derivatives Check',
+            courseId: 'math',
+            questions: [
+              {
+                prompt: 'If the discriminant b² - 4ac equals 0, how many distinct real roots exist?',
+                options: ['One repeated real root', 'Two distinct real roots', 'No real roots', 'Infinitely many roots'],
+                answerIndex: 0,
+              },
+              {
+                prompt: 'What is the derivative of f(x) = 4x³?',
+                options: ['12x²', '4x²', '12x³', '3x⁴'],
+                answerIndex: 0,
+              },
+              {
+                prompt: 'What does the derivative f′(a) represent geometrically?',
+                options: ['Slope of the tangent line at x = a', 'Area under the curve', 'The y-intercept', 'Axis of symmetry'],
+                answerIndex: 0,
+              },
+              {
+                prompt: 'Which rule differentiates composite functions f(g(x))?',
+                options: ['Chain Rule', 'Quotient Rule', 'Zero Rule', 'L’Hôpital’s Rule'],
+                answerIndex: 0,
+              },
+            ],
+          },
+          {
+            id: 'q_sci_1',
+            title: 'Cellular Biology Midterm Prep',
+            courseId: 'science',
+            questions: [
+              {
+                prompt: 'Where does Glycolysis occur inside a eukaryotic cell?',
+                options: ['Cytosol', 'Mitochondrial matrix', 'Nucleolus', 'Golgi apparatus'],
+                answerIndex: 0,
+              },
+              {
+                prompt: 'Which molecule serves as the primary energy currency of the cell?',
+                options: ['ATP', 'DNA', 'Cellulose', 'Cholesterol'],
+                answerIndex: 0,
+              },
+              {
+                prompt: 'Which organelle synthesizes proteins from mRNA?',
+                options: ['Ribosome', 'Lysosome', 'Peroxisome', 'Vacuole'],
+                answerIndex: 0,
+              },
+              {
+                prompt: 'How does an enzyme speed up a chemical reaction?',
+                options: ['By lowering activation energy', 'By raising cell temperature', 'By increasing product mass', 'By altering equilibrium'],
+                answerIndex: 0,
+              },
+              {
+                prompt: 'What drives ATP Synthase during oxidative phosphorylation?',
+                options: ['A proton (H⁺) gradient', 'Direct sunlight', 'Osmotic turgor pressure', 'DNA replication'],
+                answerIndex: 0,
+              },
+            ],
+          },
+        ],
+
+        // 4. Books in Resources (courseId: null => "Uncategorized")
+        books: [
+          {
+            id: 'b_1',
+            title: 'Calculus: Early Transcendentals',
+            author: 'James Stewart',
+            pages: '1,368 pages',
+            progressPct: 65,
+            courseId: 'math',
+          },
+          {
+            id: 'b_2',
+            title: 'Campbell Biology (12th Ed.)',
+            author: 'Urry, Cain & Wasserman',
+            pages: '1,488 pages',
+            progressPct: 40,
+            courseId: 'science',
+          },
+          {
+            id: 'b_3',
+            title: 'Elements of Style',
+            author: 'Strunk & White',
+            pages: '105 pages',
+            progressPct: 80,
+            courseId: 'english',
+          },
+          {
+            id: 'b_4',
+            title: 'Effective Study Habits & Time Management',
+            author: 'StudEase Academic Guide',
+            pages: '64 pages',
+            progressPct: 20,
+            courseId: null, // Uncategorized
+          },
+        ],
+      };
+    }
+
+    let state = createInitialState();
+
+    // =========================================================================
+    // 3. TOAST, PROGRESS, RESET & CHIME HELPERS
+    // =========================================================================
+    let toastTimer = null;
+    function showToast(message, icon = '✨') {
+      const root = document.getElementById('toast-root');
+      const box = document.getElementById('toast-message');
+      if (!root || !box) return;
+      box.innerHTML = `<span class="text-sm">${icon}</span><span>${escapeHtml(message)}</span>`;
+      root.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        root.classList.add('hidden');
+      }, 2600);
+    }
+
+    function recordStudyProgress(label) {
+      state.dailyGoalCompleted = Math.min(state.dailyGoalTarget, state.dailyGoalCompleted + 1);
+      state.totalSessions += 1;
+      if (!state.studyDays.includes(state.selectedCalendarDay)) {
+        state.studyDays.push(state.selectedCalendarDay);
+      }
+      playPrototypeChime(740);
+      showToast(label, '🔥');
+    }
+
+    function resetDemoState() {
+      state = createInitialState();
+      closeModal();
+      renderApp();
+      showToast('Demo data reset to initial state', '🔄');
+    }
+
+    function playPrototypeChime(freq = 660) {
+      if (!state.soundEffectsEnabled || state.soundVolume <= 0) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const vol = Math.max(0.01, (state.soundVolume / 100) * 0.14);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.25, ctx.currentTime + 0.14);
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.19);
+      } catch (_) {
+        // Ignore if browser blocks audio before user interaction
+      }
+    }
+
+    // =========================================================================
+    // 4. AUTHENTICATION (LOGIN / SIGN UP / DEMO / LOG OUT)
+    // =========================================================================
+    function setAuthMode(mode) {
+      state.authMode = mode;
+      renderApp();
+    }
+
+    function handleAuthSubmit(e) {
+      if (e) e.preventDefault();
+      const nameInput = document.getElementById('auth-name-input');
+      const emailInput = document.getElementById('auth-email-input');
+      if (state.authMode === 'signup' && nameInput && nameInput.value.trim()) {
+        state.user.name = nameInput.value.trim();
+      }
+      if (emailInput && emailInput.value.trim()) {
+        state.user.email = emailInput.value.trim();
+      }
+      state.isAuthenticated = true;
+      state.activeTab = 'home';
+      state.subView = null;
+      renderApp();
+      showToast(`Welcome back, ${state.user.name.split(' ')[0]}!`, '👋');
+    }
+
+    function loginDemoAccount() {
+      state.user.name = 'Charls Daniel Atilares';
+      state.user.email = 'charlsdaniel.atilares@studease.app';
+      state.isAuthenticated = true;
+      state.activeTab = 'home';
+      state.subView = null;
+      renderApp();
+      showToast('Signed in with Demo Account', '⚡');
+    }
+
+    function handleLogout() {
+      state.isAuthenticated = false;
+      state.subView = null;
+      state.activeCourseId = null;
+      closeModal();
+      renderApp();
+      showToast('Logged out of StudEase', '👋');
+    }
+
+    function renderAuthScreen() {
+      const isSignUp = state.authMode === 'signup';
+      return `
+        <div class="min-h-full flex flex-col justify-between py-4 px-1">
+          <!-- Brand Header -->
+          <div class="text-center mt-2">
+            <div class="w-16 h-16 mx-auto rounded-[22px] bg-gradient-to-br from-[#4F46E5] to-indigo-700 text-white flex items-center justify-center text-2xl font-extrabold shadow-lg shadow-indigo-200/80 mb-3.5">
+              📘
+            </div>
+            <h1 class="text-2xl font-extrabold tracking-tight text-[#0F172A]">StudEase</h1>
+            <p class="text-xs text-[#64748B] mt-1 max-w-[240px] mx-auto leading-relaxed">
+              Your interactive study companion for courses, flashcards, quizzes &amp; books.
+            </p>
+          </div>
+
+          <!-- Login / Sign Up Form Card -->
+          <div class="bg-white border border-[#E2E8F0] rounded-[26px] p-5 shadow-sm my-4">
+            <div class="bg-slate-100 p-1 rounded-2xl grid grid-cols-2 gap-1 mb-4">
+              <button
+                type="button"
+                onclick="setAuthMode('login')"
+                class="py-2 text-xs font-extrabold rounded-xl transition-all ${
+                  !isSignUp ? 'bg-white text-[#4F46E5] shadow-xs' : 'text-[#64748B]'
+                }"
+              >
+                Log In
+              </button>
+              <button
+                type="button"
+                onclick="setAuthMode('signup')"
+                class="py-2 text-xs font-extrabold rounded-xl transition-all ${
+                  isSignUp ? 'bg-white text-[#4F46E5] shadow-xs' : 'text-[#64748B]'
+                }"
+              >
+                Sign Up
+              </button>
+            </div>
+
+            <form onsubmit="handleAuthSubmit(event)" class="space-y-3">
+              ${
+                isSignUp
+                  ? `
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Full Name</label>
+                  <input
+                    id="auth-name-input"
+                    type="text"
+                    required
+                    value="${escapeHtml(state.user.name)}"
+                    placeholder="Enter your full name"
+                    class="w-full text-xs bg-slate-50 border border-[#E2E8F0] rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#4F46E5]"
+                  />
+                </div>
+              `
+                  : ''
+              }
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Student Email</label>
+                <input
+                  id="auth-email-input"
+                  type="email"
+                  required
+                  value="${escapeHtml(state.user.email)}"
+                  placeholder="student@university.edu"
+                  class="w-full text-xs bg-slate-50 border border-[#E2E8F0] rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#4F46E5]"
+                />
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Password</label>
+                <input
+                  type="password"
+                  required
+                  value="••••••••••••"
+                  class="w-full text-xs bg-slate-50 border border-[#E2E8F0] rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#4F46E5]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                class="w-full mt-1 bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-extrabold py-3 rounded-2xl shadow-sm transition-all"
+              >
+                ${isSignUp ? 'Create Account & Start Studying' : 'Log In to StudEase'}
+              </button>
+            </form>
+          </div>
+
+          <!-- Instant Demo Account Entry -->
+          <div class="space-y-2 text-center">
+            <button
+              type="button"
+              onclick="loginDemoAccount()"
+              class="w-full py-3 px-4 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-extrabold transition-all"
+            >
+              ⚡ Try Demo Account (Instant Access)
+            </button>
+            <p class="text-[10px] text-[#64748B]">Interactive Prototype • All changes persist in session</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 5. NAVIGATION & MAIN RENDER LOOP
+    // =========================================================================
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      state.subView = null;
+      if (tabId !== 'courses') {
+        state.activeCourseId = null;
+      }
+      closeModal();
+      renderApp();
+      document.getElementById('screen-viewport').scrollTop = 0;
+    }
+
+    function openProfileScreen() {
+      state.subView = 'profile';
+      closeModal();
+      renderApp();
+      document.getElementById('screen-viewport').scrollTop = 0;
+    }
+
+    function closeProfileScreen() {
+      state.subView = null;
+      renderApp();
+      document.getElementById('screen-viewport').scrollTop = 0;
+    }
+
+    function openCourseDetail(courseId) {
+      state.activeTab = 'courses';
+      state.activeCourseId = courseId;
+      renderApp();
+      document.getElementById('screen-viewport').scrollTop = 0;
+    }
+
+    function backToCoursesList() {
+      state.activeCourseId = null;
+      renderApp();
+      document.getElementById('screen-viewport').scrollTop = 0;
+    }
+
+    function renderBottomNav() {
+      const items = [
+        { id: 'home', label: 'Home', icon: '🏠' },
+        { id: 'courses', label: 'Courses', icon: '📚' },
+        { id: 'tools', label: 'Tools', icon: '⚡' },
+        { id: 'resources', label: 'Resources', icon: '📖' },
+        { id: 'streak', label: 'Streak', icon: '🔥' },
+      ];
+
+      const navEl = document.getElementById('bottom-nav');
+      navEl.innerHTML = items
+        .map((item) => {
+          const isActive = state.activeTab === item.id;
+          return `
+            <button
+              type="button"
+              onclick="switchTab('${item.id}')"
+              class="flex flex-col items-center justify-center py-1.5 px-2 rounded-2xl transition-all ${
+                isActive
+                  ? 'bg-indigo-50 text-[#4F46E5] font-bold'
+                  : 'text-[#64748B] hover:text-slate-900 font-medium'
+              }"
+            >
+              <span class="text-base leading-none mb-1">${item.icon}</span>
+              <span class="text-[11px] tracking-tight">${item.label}</span>
+            </button>
+          `;
+        })
+        .join('');
+    }
+
+    function renderApp() {
+      const phoneFrame = document.getElementById('phone-frame');
+      const navEl = document.getElementById('bottom-nav');
+      const viewport = document.getElementById('screen-viewport');
+
+      if (phoneFrame) {
+        phoneFrame.classList.toggle('dark-mode', Boolean(state.darkMode));
+      }
+
+      if (!state.isAuthenticated) {
+        navEl.classList.add('hidden');
+        viewport.innerHTML = renderAuthScreen();
+        return;
+      }
+
+      if (state.subView === 'profile') {
+        navEl.classList.add('hidden');
+        viewport.innerHTML = renderProfileScreen();
+        return;
+      }
+
+      navEl.classList.remove('hidden');
+      renderBottomNav();
+
+      if (state.activeTab === 'courses') {
+        viewport.innerHTML = state.activeCourseId
+          ? renderCourseDetailScreen(state.activeCourseId)
+          : renderCoursesListScreen();
+      } else if (state.activeTab === 'tools') {
+        viewport.innerHTML = renderToolsScreen();
+      } else if (state.activeTab === 'resources') {
+        viewport.innerHTML = renderResourcesScreen();
+      } else if (state.activeTab === 'home') {
+        viewport.innerHTML = renderHomeScreen();
+      } else if (state.activeTab === 'streak') {
+        viewport.innerHTML = renderStreakScreen();
+      }
+    }
+
+    // =========================================================================
+    // 6. COURSES TAB & COURSE DETAIL SCREEN
+    // =========================================================================
+    function renderCoursesListScreen() {
+      const totalLessons = state.courses.reduce((sum, c) => sum + c.lessons.length, 0);
+      const completedLessons = state.courses.reduce(
+        (sum, c) => sum + c.lessons.filter((l) => l.completed).length,
+        0
+      );
+
+      const courseCardsHtml =
+        state.courses.length === 0
+          ? `<div class="bg-white border border-[#E2E8F0] rounded-[22px] p-6 text-center">
+              <p class="text-sm font-bold text-slate-800">No courses yet</p>
+              <p class="text-xs text-[#64748B] mt-1">Tap <strong>Manage Courses</strong> above to create your first subject.</p>
+            </div>`
+          : state.courses
+              .map((course) => {
+                const theme = COLOR_MAP[course.color] || COLOR_MAP.indigo;
+                const doneCount = course.lessons.filter((l) => l.completed).length;
+                const linkedDecks = state.decks.filter((d) => d.courseId === course.id).length;
+                const linkedQuizzes = state.quizzes.filter((q) => q.courseId === course.id).length;
+
+                return `
+                  <div
+                    onclick="openCourseDetail('${escapeHtml(course.id)}')"
+                    class="cursor-pointer bg-white border border-[#E2E8F0] hover:border-indigo-300 rounded-[22px] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-all active:scale-[0.99]"
+                  >
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-11 h-11 rounded-2xl ${theme.bg} ${theme.text} border ${theme.border} flex items-center justify-center text-base font-extrabold shrink-0">
+                          ${escapeHtml(course.name.charAt(0).toUpperCase())}
+                        </div>
+                        <div class="min-w-0">
+                          <h3 class="text-[15px] font-extrabold text-[#0F172A] truncate">${escapeHtml(course.name)}</h3>
+                          <p class="text-xs text-[#64748B] truncate mt-0.5">${escapeHtml(course.desc)}</p>
+                        </div>
+                      </div>
+                      <span class="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full ${theme.bg} ${theme.text}">
+                        ${doneCount}/${course.lessons.length} done
+                      </span>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-3.5 pt-3 border-t border-slate-100 text-[11px] font-semibold">
+                      <span class="text-[#64748B]">
+                        📖 ${course.lessons.length} lessons • 🗂️ ${linkedDecks} decks • 📝 ${linkedQuizzes} quizzes
+                      </span>
+                      <span class="text-[#4F46E5] font-bold">Open →</span>
+                    </div>
+                  </div>
+                `;
+              })
+              .join('');
+
+      return `
+        <!-- Header -->
+        <div class="flex items-start justify-between gap-2 pt-1 mb-3.5">
+          <div>
+            <h1 class="text-[22px] font-extrabold tracking-tight text-[#0F172A]">Subject Courses</h1>
+            <p class="text-xs text-[#64748B] mt-0.5">Organized courses, lessons &amp; study tools</p>
+          </div>
+          <span class="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+            ${completedLessons}/${totalLessons} Done
+          </span>
+        </div>
+
+        <!-- Action Card: Manage Courses + Generate with AI -->
+        <div class="bg-white border border-[#E2E8F0] rounded-[22px] p-3 mb-4 grid grid-cols-2 gap-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+          <button
+            type="button"
+            onclick="openManageCoursesModal()"
+            class="flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-[#0F172A] border border-[#E2E8F0] text-xs font-bold py-2.5 px-3 rounded-2xl transition-all"
+          >
+            <span>⚙️</span>
+            <span>Manage Courses</span>
+          </button>
+          <button
+            type="button"
+            onclick="openGenerateAiModal(null)"
+            class="flex items-center justify-center gap-1.5 bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-3 rounded-2xl shadow-sm transition-all"
+          >
+            <span>✨</span>
+            <span>Generate with AI</span>
+          </button>
+        </div>
+
+        <!-- Course Cards List -->
+        <div class="space-y-3">
+          ${courseCardsHtml}
+        </div>
+      `;
+    }
+
+    function renderCourseDetailScreen(courseId) {
+      const course = getCourse(courseId);
+      if (!course) {
+        state.activeCourseId = null;
+        return renderCoursesListScreen();
+      }
+      const theme = COLOR_MAP[course.color] || COLOR_MAP.indigo;
+      const courseDecks = state.decks.filter((d) => d.courseId === course.id);
+      const courseQuizzes = state.quizzes.filter((q) => q.courseId === course.id);
+
+      const lessonsHtml =
+        course.lessons.length === 0
+          ? `<div class="bg-white border border-[#E2E8F0] rounded-[20px] p-5 text-center">
+              <p class="text-xs font-bold text-slate-800">No lessons in ${escapeHtml(course.name)} yet</p>
+              <p class="text-[11px] text-[#64748B] mt-1">Tap <strong>Manage Lessons</strong> above to add structured notes or PDFs.</p>
+            </div>`
+          : course.lessons
+              .map(
+                (lesson) => `
+                <div
+                  onclick="openLessonReaderModal('${escapeHtml(course.id)}', '${escapeHtml(lesson.id)}')"
+                  class="cursor-pointer bg-white border border-[#E2E8F0] hover:border-indigo-300 rounded-[20px] p-4 transition-all active:scale-[0.99]"
+                >
+                  <div class="flex items-center justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${theme.bg} ${theme.text}">
+                        ${escapeHtml(course.name)}
+                      </span>
+                      ${
+                        lesson.pdfAttachment
+                          ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                              📄 PDF
+                            </span>`
+                          : ''
+                      }
+                    </div>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                      lesson.completed
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-slate-100 text-slate-600'
+                    }">
+                      ${lesson.completed ? '✓ Completed' : 'Start Lesson'}
+                    </span>
+                  </div>
+                  <h4 class="text-sm font-bold text-[#0F172A] leading-snug">${escapeHtml(lesson.title)}</h4>
+                  <div class="flex items-center justify-between mt-3 text-[11px] font-semibold">
+                    <span class="text-[#64748B]">🕒 ${escapeHtml(lesson.readTime)}</span>
+                    <span class="text-[#4F46E5]">Open Notes →</span>
+                  </div>
+                </div>
+              `
+              )
+              .join('');
+
+      const decksAndQuizzesHtml =
+        courseDecks.length === 0 && courseQuizzes.length === 0
+          ? `<div class="bg-white border border-[#E2E8F0] rounded-[20px] p-5 text-center">
+              <p class="text-xs font-bold text-slate-800">No flashcards or quizzes linked yet</p>
+              <p class="text-[11px] text-[#64748B] mt-1">Tap <strong>Generate with AI</strong> above to create study sets directly for ${escapeHtml(
+                course.name
+              )}.</p>
+            </div>`
+          : `
+            <div class="space-y-2.5">
+              ${courseDecks
+                .map(
+                  (d) => `
+                  <div
+                    onclick="openDeckPlayerModal('${escapeHtml(d.id)}')"
+                    class="cursor-pointer bg-white border border-[#E2E8F0] hover:border-indigo-300 rounded-[20px] p-3.5 flex items-center justify-between gap-3"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">🗂️</div>
+                      <div>
+                        <p class="text-xs font-bold text-[#0F172A]">${escapeHtml(d.title)}</p>
+                        <p class="text-[11px] text-[#64748B]">Flashcard Deck • ${d.cards.length} cards</p>
+                      </div>
+                    </div>
+                    <span class="text-xs font-bold text-[#4F46E5]">Study →</span>
+                  </div>
+                `
+                )
+                .join('')}
+              ${courseQuizzes
+                .map(
+                  (q) => `
+                  <div
+                    onclick="openQuizRunnerModal('${escapeHtml(q.id)}')"
+                    class="cursor-pointer bg-white border border-[#E2E8F0] hover:border-emerald-300 rounded-[20px] p-3.5 flex items-center justify-between gap-3"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold">📝</div>
+                      <div>
+                        <p class="text-xs font-bold text-[#0F172A]">${escapeHtml(q.title)}</p>
+                        <p class="text-[11px] text-[#64748B]">Practice Quiz • ${q.questions.length} questions</p>
+                      </div>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-600">Start →</span>
+                  </div>
+                `
+                )
+                .join('')}
+            </div>
+          `;
+
+      return `
+        <!-- Back Navigation & Course Header -->
+        <div class="pt-1 mb-4">
+          <button
+            type="button"
+            onclick="backToCoursesList()"
+            class="inline-flex items-center gap-1.5 text-xs font-bold text-[#4F46E5] hover:text-indigo-800 mb-2.5"
+          >
+            <span>←</span>
+            <span>Back to Courses</span>
+          </button>
+
+          <div class="bg-white border border-[#E2E8F0] rounded-[20px] p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-2xl ${theme.bg} ${theme.text} border ${theme.border} flex items-center justify-center text-lg font-extrabold shrink-0">
+                ${escapeHtml(course.name.charAt(0).toUpperCase())}
+              </div>
+              <div>
+                <h1 class="text-lg font-extrabold text-[#0F172A]">${escapeHtml(course.name)}</h1>
+                <p class="text-xs text-[#64748B]">${escapeHtml(course.desc)}</p>
+              </div>
+            </div>
+
+            <!-- Course Detail Action Row: Manage Lessons + Generate with AI (pre-selected to this course) -->
+            <div class="grid grid-cols-2 gap-2.5 mt-4 pt-3.5 border-t border-slate-100">
+              <button
+                type="button"
+                onclick="openManageLessonsModal('${escapeHtml(course.id)}')"
+                class="flex items-center justify-center gap-1.5 bg-white hover:bg-slate-50 text-[#0F172A] border border-[#E2E8F0] text-xs font-bold py-2.5 px-3 rounded-2xl transition-all"
+              >
+                <span>⚙️</span>
+                <span>Manage Lessons</span>
+              </button>
+              <button
+                type="button"
+                onclick="openGenerateAiModal('${escapeHtml(course.id)}')"
+                class="flex items-center justify-center gap-1.5 bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-3 rounded-2xl shadow-sm transition-all"
+              >
+                <span>✨</span>
+                <span>Generate with AI</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lessons Section -->
+        <div class="mb-5">
+          <div class="flex items-center justify-between mb-2.5">
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-[#64748B]">
+              Course Lessons (${course.lessons.length})
+            </h2>
+          </div>
+          <div class="space-y-3">
+            ${lessonsHtml}
+          </div>
+        </div>
+
+        <!-- Assigned Flashcards & Quizzes Section -->
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-[#64748B]">
+              Flashcards &amp; Quizzes (${courseDecks.length + courseQuizzes.length})
+            </h2>
+          </div>
+          ${decksAndQuizzesHtml}
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 7. TOOLS TAB (FLASHCARDS & QUIZZES ONLY — ACTIVITIES REMOVED)
+    // =========================================================================
+    function setToolsSubTab(subTab) {
+      state.toolsSubTab = subTab;
+      renderApp();
+    }
+
+    function setToolsCourseFilter(filterVal) {
+      state.toolsCourseFilter = filterVal;
+      renderApp();
+    }
+
+    function renderFilterChipsHtml(activeFilter, handlerName) {
+      const chips = [
+        { id: 'all', label: 'All' },
+        ...state.courses.map((c) => ({ id: c.id, label: c.name })),
+        { id: 'uncategorized', label: 'Uncategorized' },
+      ];
+
+      return `
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-3.5">
+          ${chips
+            .map((chip) => {
+              const active = activeFilter === chip.id;
+              return `
+                <button
+                  type="button"
+                  onclick="${handlerName}('${escapeHtml(chip.id)}')"
+                  class="shrink-0 text-xs font-bold px-3.5 py-1.5 rounded-full border transition-all ${
+                    active
+                      ? 'bg-[#4F46E5] text-white border-[#4F46E5] shadow-xs'
+                      : 'bg-white text-[#64748B] border-[#E2E8F0] hover:text-slate-900'
+                  }"
+                >
+                  ${escapeHtml(chip.label)}
+                </button>
+              `;
+            })
+            .join('')}
+        </div>
+      `;
+    }
+
+    function filterByCourseChoice(items, filterVal) {
+      if (filterVal === 'all') return items;
+      if (filterVal === 'uncategorized') return items.filter((item) => !item.courseId);
+      return items.filter((item) => item.courseId === filterVal);
+    }
+
+    function renderToolsScreen() {
+      const isFlashcards = state.toolsSubTab === 'flashcards';
+      const preselectedCourse =
+        state.toolsCourseFilter !== 'all' && state.toolsCourseFilter !== 'uncategorized'
+          ? state.toolsCourseFilter
+          : null;
+
+      const filteredDecks = filterByCourseChoice(state.decks, state.toolsCourseFilter);
+      const filteredQuizzes = filterByCourseChoice(state.quizzes, state.toolsCourseFilter);
+
+      const listHtml = isFlashcards
+        ? filteredDecks.length === 0
+          ? `<div class="bg-white border border-[#E2E8F0] rounded-[20px] p-6 text-center">
+              <p class="text-sm font-bold text-slate-800">No flashcard decks in this filter</p>
+              <p class="text-xs text-[#64748B] mt-1">Use <strong>Generate with AI</strong> or <strong>＋ Create</strong> to add a deck.</p>
+            </div>`
+          : filteredDecks
+              .map(
+                (deck) => `
+                <div
+                  onclick="openDeckPlayerModal('${escapeHtml(deck.id)}')"
+                  class="cursor-pointer bg-white border border-[#E2E8F0] hover:border-indigo-300 rounded-[20px] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-all active:scale-[0.99]"
+                >
+                  <div class="flex items-center justify-between gap-2 mb-2">
+                    ${getCourseBadgeHtml(deck.courseId)}
+                    <span class="text-[11px] font-bold text-slate-500">${deck.cards.length} cards</span>
+                  </div>
+                  <h3 class="text-[15px] font-bold text-[#0F172A]">${escapeHtml(deck.title)}</h3>
+                  <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100 text-xs font-bold">
+                    <span class="text-[#64748B]">3D Flip Study Mode</span>
+                    <span class="text-[#4F46E5]">Practice Deck →</span>
+                  </div>
+                </div>
+              `
+              )
+              .join('')
+        : filteredQuizzes.length === 0
+        ? `<div class="bg-white border border-[#E2E8F0] rounded-[20px] p-6 text-center">
+            <p class="text-sm font-bold text-slate-800">No quizzes in this filter</p>
+            <p class="text-xs text-[#64748B] mt-1">Use <strong>Generate with AI</strong> or <strong>＋ Create</strong> to build a quiz.</p>
+          </div>`
+        : filteredQuizzes
+            .map(
+              (quiz) => `
+              <div
+                onclick="openQuizRunnerModal('${escapeHtml(quiz.id)}')"
+                class="cursor-pointer bg-white border border-[#E2E8F0] hover:border-emerald-300 rounded-[20px] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-all active:scale-[0.99]"
+              >
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  ${getCourseBadgeHtml(quiz.courseId)}
+                  <span class="text-[11px] font-bold text-slate-500">${quiz.questions.length} questions</span>
+                </div>
+                <h3 class="text-[15px] font-bold text-[#0F172A]">${escapeHtml(quiz.title)}</h3>
+                <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100 text-xs font-bold">
+                  <span class="text-[#64748B]">Multiple-Choice Assessment</span>
+                  <span class="text-emerald-600">Take Quiz →</span>
+                </div>
+              </div>
+            `
+            )
+            .join('');
+
+      return `
+        <!-- Header -->
+        <div class="pt-1 mb-3.5">
+          <h1 class="text-[22px] font-extrabold tracking-tight text-[#0F172A]">Study Tools</h1>
+          <p class="text-xs text-[#64748B] mt-0.5">Flashcards &amp; self-assessment quizzes</p>
+        </div>
+
+        <!-- 2-Option Segmented Switch (Flashcards & Quizzes ONLY — Activities removed) -->
+        <div class="bg-slate-200/75 p-1 rounded-2xl grid grid-cols-2 gap-1 mb-3.5">
+          <button
+            type="button"
+            onclick="setToolsSubTab('flashcards')"
+            class="py-2 text-xs font-bold rounded-xl transition-all ${
+              isFlashcards ? 'bg-white text-[#4F46E5] shadow-xs' : 'text-[#64748B] hover:text-slate-900'
+            }"
+          >
+            🗂️ Flashcards (${state.decks.length})
+          </button>
+          <button
+            type="button"
+            onclick="setToolsSubTab('quizzes')"
+            class="py-2 text-xs font-bold rounded-xl transition-all ${
+              !isFlashcards ? 'bg-white text-[#4F46E5] shadow-xs' : 'text-[#64748B] hover:text-slate-900'
+            }"
+          >
+            📝 Quizzes (${state.quizzes.length})
+          </button>
+        </div>
+
+        <!-- Course Filter Chips -->
+        ${renderFilterChipsHtml(state.toolsCourseFilter, 'setToolsCourseFilter')}
+
+        <!-- Action Row: Generate with AI + Manage Flashcards/Quizzes + Create -->
+        <div class="bg-white border border-[#E2E8F0] rounded-[20px] p-3 mb-4 space-y-2">
+          <button
+            type="button"
+            onclick="openGenerateAiModal(${preselectedCourse ? `'${escapeHtml(preselectedCourse)}'` : 'null'})"
+            class="w-full flex items-center justify-center gap-1.5 bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-3 rounded-2xl shadow-sm transition-all"
+          >
+            <span>✨</span>
+            <span>Generate with AI</span>
+          </button>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onclick="${isFlashcards ? 'openManageDecksModal()' : 'openManageQuizzesModal()'}"
+              class="flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-[#0F172A] border border-[#E2E8F0] text-xs font-bold py-2.5 px-2.5 rounded-2xl transition-all"
+            >
+              <span>⚙️</span>
+              <span>${isFlashcards ? 'Manage Flashcards' : 'Manage Quizzes'}</span>
+            </button>
+            <button
+              type="button"
+              onclick="${isFlashcards ? 'openCreateDeckModal()' : 'openCreateQuizModal()'}"
+              class="flex items-center justify-center gap-1 bg-white hover:bg-indigo-50 text-[#4F46E5] border border-indigo-200 text-xs font-bold py-2.5 px-2.5 rounded-2xl transition-all"
+            >
+              <span>＋</span>
+              <span>Create ${isFlashcards ? 'Deck' : 'Quiz'}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Cards List -->
+        <div class="space-y-3">
+          ${listHtml}
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 8. RESOURCES TAB (BOOKS WITH COURSE CATEGORIZATION)
+    // =========================================================================
+    function setResourcesCourseFilter(filterVal) {
+      state.resourcesCourseFilter = filterVal;
+      renderApp();
+    }
+
+    function reassignBookCourse(bookId, newCourseId) {
+      const book = state.books.find((b) => b.id === bookId);
+      if (!book) return;
+      book.courseId = newCourseId || null;
+      const label = book.courseId ? getCourse(book.courseId)?.name : 'Uncategorized';
+      showToast(`Moved "${book.title}" to ${label}`, '📚');
+      renderApp();
+    }
+
+    function renderResourcesScreen() {
+      const filteredBooks = filterByCourseChoice(state.books, state.resourcesCourseFilter);
+
+      const booksHtml =
+        filteredBooks.length === 0
+          ? `<div class="bg-white border border-[#E2E8F0] rounded-[20px] p-6 text-center">
+              <p class="text-sm font-bold text-slate-800">No books in this category</p>
+              <p class="text-xs text-[#64748B] mt-1">Tap <strong>＋ Add Book</strong> above or reassign an existing book's course.</p>
+            </div>`
+          : filteredBooks
+              .map((book) => {
+                const course = getCourse(book.courseId);
+                const theme = course ? COLOR_MAP[course.color] || COLOR_MAP.indigo : null;
+
+                return `
+                  <div class="bg-white border border-[#E2E8F0] rounded-[20px] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+                    <div class="flex items-start gap-3">
+                      <div class="w-11 h-14 rounded-xl ${
+                        theme ? `${theme.bg} ${theme.text} border ${theme.border}` : 'bg-slate-100 text-slate-600 border border-slate-200'
+                      } flex flex-col items-center justify-center shrink-0 font-extrabold text-xs">
+                        <span>📕</span>
+                        <span class="text-[9px] mt-0.5">PDF</span>
+                      </div>
+
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                          ${getCourseBadgeHtml(book.courseId)}
+                          <span class="text-[11px] font-bold text-emerald-600">${book.progressPct}%</span>
+                        </div>
+                        <h3 class="text-sm font-bold text-[#0F172A] leading-snug">${escapeHtml(book.title)}</h3>
+                        <p class="text-[11px] text-[#64748B] mt-0.5">${escapeHtml(book.author)} • ${escapeHtml(book.pages)}</p>
+
+                        <!-- Reading Progress Bar -->
+                        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mt-2.5">
+                          <div class="h-full bg-[#10B981] rounded-full transition-all" style="width: ${book.progressPct}%"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Inline Course Categorization Selector + Open Reader -->
+                    <div class="flex items-center justify-between gap-2 mt-3.5 pt-3 border-t border-slate-100">
+                      <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                        <label class="text-[11px] font-semibold text-[#64748B] shrink-0">Course:</label>
+                        <select
+                          aria-label="Course category for ${escapeHtml(book.title)}"
+                          onchange="reassignBookCourse('${escapeHtml(book.id)}', this.value)"
+                          class="w-full max-w-[165px] text-[11px] font-bold text-[#0F172A] bg-slate-50 border border-[#E2E8F0] rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-[#4F46E5]"
+                        >
+                          ${buildCourseOptionsHtml(book.courseId)}
+                        </select>
+                      </div>
+
+                      <button
+                        type="button"
+                        onclick="openBookReaderModal('${escapeHtml(book.id)}')"
+                        class="shrink-0 text-xs font-bold text-[#4F46E5] hover:text-indigo-800 px-2.5 py-1.5 rounded-xl bg-indigo-50/70"
+                      >
+                        Read →
+                      </button>
+                    </div>
+                  </div>
+                `;
+              })
+              .join('');
+
+      return `
+        <!-- Header -->
+        <div class="flex items-start justify-between gap-2 pt-1 mb-3.5">
+          <div>
+            <h1 class="text-[22px] font-extrabold tracking-tight text-[#0F172A]">Study Resources</h1>
+            <p class="text-xs text-[#64748B] mt-0.5">Course-categorized books &amp; PDFs</p>
+          </div>
+          <button
+            type="button"
+            onclick="openAddBookModal()"
+            class="shrink-0 bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-bold px-3.5 py-2 rounded-2xl shadow-sm transition-all"
+          >
+            ＋ Add Book
+          </button>
+        </div>
+
+        <!-- Course Filter Chips -->
+        ${renderFilterChipsHtml(state.resourcesCourseFilter, 'setResourcesCourseFilter')}
+
+        <!-- Books List -->
+        <div class="space-y-3">
+          ${booksHtml}
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 9. HOME, PROFILE & SETTINGS, AND STREAK TABS
+    // =========================================================================
+    function getUserInitials(name) {
+      const parts = (name || 'A').trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+      return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+
+    function formatReminderTime12h(time24) {
+      const [hStr, mStr] = (time24 || '19:30').split(':');
+      let h = parseInt(hStr, 10);
+      if (Number.isNaN(h)) h = 19;
+      const suffix = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 === 0 ? 12 : h % 12;
+      return `${h12}:${mStr || '30'} ${suffix}`;
+    }
+
+    function renderHomeScreen() {
+      const pct = Math.min(100, Math.round((state.dailyGoalCompleted / state.dailyGoalTarget) * 100));
+      const nextCourse = state.courses[0];
+      const nextLesson = nextCourse?.lessons.find((l) => !l.completed) || nextCourse?.lessons[0];
+      const firstName = (state.user.name || 'Charls').split(' ')[0];
+      const initials = getUserInitials(state.user.name);
+
+      return `
+        <!-- Top Greeting Header -->
+        <div class="flex items-center justify-between gap-2 pt-1 mb-4">
+          <div class="min-w-0">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">Wednesday, Nov 18</p>
+            <h1 class="text-[20px] font-extrabold text-[#0F172A] truncate">Welcome back, ${escapeHtml(firstName)}!</h1>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onclick="switchTab('streak')"
+              class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1.5 rounded-full text-xs font-extrabold"
+            >
+              <span>🔥</span>
+              <span>${state.streakCount}d</span>
+            </button>
+            <button
+              type="button"
+              onclick="openProfileScreen()"
+              title="Open Profile & Settings"
+              class="w-9 h-9 rounded-full bg-gradient-to-br from-[#4F46E5] to-indigo-700 text-white font-extrabold text-xs flex items-center justify-center shadow-sm ring-2 ring-indigo-100 hover:scale-105 transition-transform"
+            >
+              ${escapeHtml(initials)}
+            </button>
+          </div>
+        </div>
+
+        <!-- Daily Study Goal Hero Card -->
+        <div class="bg-gradient-to-br from-[#4F46E5] to-indigo-700 text-white rounded-[22px] p-4 mb-4 shadow-sm">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold text-indigo-100">Daily Study Goal</span>
+            <span class="text-xs font-extrabold bg-white/15 px-2.5 py-0.5 rounded-full">${pct}%</span>
+          </div>
+          <p class="text-lg font-extrabold">
+            ${state.dailyGoalCompleted} of ${state.dailyGoalTarget} tasks completed
+          </p>
+          <div class="w-full h-2 bg-white/20 rounded-full overflow-hidden mt-3">
+            <div class="h-full bg-[#10B981] rounded-full transition-all" style="width: ${pct}%"></div>
+          </div>
+          <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-white/15 text-xs">
+            <span class="text-indigo-100">${
+              state.dailyGoalCompleted >= state.dailyGoalTarget ? '🎉 Daily Goal Achieved!' : 'Keep momentum going today'
+            }</span>
+            <button type="button" onclick="switchTab('courses')" class="font-bold underline">Study Now →</button>
+          </div>
+        </div>
+
+        <!-- Quick Module Grid -->
+        <div class="grid grid-cols-2 gap-2.5 mb-4">
+          <button type="button" onclick="switchTab('courses')" class="bg-white border border-[#E2E8F0] rounded-[20px] p-3.5 text-left hover:border-indigo-300 transition-all">
+            <span class="text-lg">📚</span>
+            <p class="text-sm font-bold text-[#0F172A] mt-1">Courses</p>
+            <p class="text-[11px] text-[#64748B]">${state.courses.length} active subjects</p>
+          </button>
+          <button type="button" onclick="switchTab('tools')" class="bg-white border border-[#E2E8F0] rounded-[20px] p-3.5 text-left hover:border-indigo-300 transition-all">
+            <span class="text-lg">⚡</span>
+            <p class="text-sm font-bold text-[#0F172A] mt-1">Tools</p>
+            <p class="text-[11px] text-[#64748B]">${state.decks.length} decks • ${state.quizzes.length} quizzes</p>
+          </button>
+          <button type="button" onclick="switchTab('resources')" class="bg-white border border-[#E2E8F0] rounded-[20px] p-3.5 text-left hover:border-indigo-300 transition-all">
+            <span class="text-lg">📖</span>
+            <p class="text-sm font-bold text-[#0F172A] mt-1">Resources</p>
+            <p class="text-[11px] text-[#64748B]">${state.books.length} categorized books</p>
+          </button>
+          <button type="button" onclick="openGenerateAiModal(null)" class="bg-indigo-50/80 border border-indigo-200 rounded-[20px] p-3.5 text-left hover:bg-indigo-100/70 transition-all">
+            <span class="text-lg">✨</span>
+            <p class="text-sm font-bold text-[#4F46E5] mt-1">AI Studio</p>
+            <p class="text-[11px] text-indigo-700/80">Generate cards &amp; quiz</p>
+          </button>
+        </div>
+
+        <!-- Continue Studying Card -->
+        ${
+          nextCourse && nextLesson
+            ? `
+          <div class="bg-white border border-[#E2E8F0] rounded-[20px] p-4">
+            <p class="text-[11px] font-extrabold uppercase tracking-wider text-[#64748B] mb-2">Continue Studying</p>
+            <div
+              onclick="openLessonReaderModal('${escapeHtml(nextCourse.id)}', '${escapeHtml(nextLesson.id)}')"
+              class="cursor-pointer flex items-center justify-between gap-3"
+            >
+              <div>
+                ${getCourseBadgeHtml(nextCourse.id, 'mb-1.5')}
+                <h3 class="text-sm font-bold text-[#0F172A]">${escapeHtml(nextLesson.title)}</h3>
+                <p class="text-[11px] text-[#64748B] mt-0.5">${escapeHtml(nextLesson.readTime)}</p>
+              </div>
+              <span class="text-xs font-bold text-[#4F46E5] shrink-0">Resume →</span>
+            </div>
+          </div>
+        `
+            : ''
+        }
+      `;
+    }
+
+    // Profile & Settings Actions & Screen (Enrolled Subjects removed; Sound Volume + Dark Mode included)
+    function setDailyGoalTarget(target) {
+      state.dailyGoalTarget = target;
+      renderApp();
+      showToast(`Daily study goal set to ${target} task${target === 1 ? '' : 's'}`, '🎯');
+    }
+
+    function toggleReminderSetting() {
+      state.reminderEnabled = !state.reminderEnabled;
+      renderApp();
+      showToast(
+        state.reminderEnabled
+          ? `Daily reminder ON (${formatReminderTime12h(state.reminderTime)})`
+          : 'Daily study reminder turned off',
+        '🔔'
+      );
+    }
+
+    function updateReminderTimeSetting(newVal) {
+      if (!newVal) return;
+      state.reminderTime = newVal;
+      renderApp();
+      showToast(`Reminder time updated to ${formatReminderTime12h(newVal)}`, '🕒');
+    }
+
+    function toggleSoundEffectsSetting() {
+      state.soundEffectsEnabled = !state.soundEffectsEnabled;
+      if (state.soundEffectsEnabled) {
+        if (state.soundVolume === 0) state.soundVolume = 75;
+        playPrototypeChime(660);
+      }
+      renderApp();
+      showToast(state.soundEffectsEnabled ? 'Sound effects turned on' : 'Sound effects muted', '🔊');
+    }
+
+    function updateSoundVolumeSetting(val) {
+      const numeric = Math.max(0, Math.min(100, parseInt(val, 10) || 0));
+      state.soundVolume = numeric;
+      if (numeric === 0 && state.soundEffectsEnabled) {
+        state.soundEffectsEnabled = false;
+      } else if (numeric > 0 && !state.soundEffectsEnabled) {
+        state.soundEffectsEnabled = true;
+      }
+      renderApp();
+      playPrototypeChime(580 + numeric * 2);
+    }
+
+    function toggleDarkModeSetting() {
+      state.darkMode = !state.darkMode;
+      renderApp();
+      showToast(state.darkMode ? 'Dark mode enabled' : 'Light mode enabled', state.darkMode ? '🌙' : '☀️');
+    }
+
+    function renderProfileScreen() {
+      const initials = getUserInitials(state.user.name);
+      const lessonsDoneCount = state.courses
+        .flatMap((c) => c.lessons)
+        .filter((l) => l.completed).length;
+      const savedBooksCount = state.books.length;
+
+      return `
+        <!-- Top Back Header -->
+        <div class="flex items-center gap-3 pt-1 mb-4">
+          <button
+            type="button"
+            onclick="closeProfileScreen()"
+            aria-label="Back from Profile & Settings"
+            class="w-9 h-9 rounded-full bg-white border border-[#E2E8F0] flex items-center justify-center text-sm font-extrabold text-[#0F172A] hover:border-indigo-300 transition-all"
+          >
+            ←
+          </button>
+          <h1 class="text-[20px] font-extrabold tracking-tight text-[#0F172A]">Profile &amp; Settings</h1>
+        </div>
+
+        <div class="space-y-3.5 pb-6">
+          <!-- Identity Card -->
+          <div class="bg-white border border-[#E2E8F0] rounded-[24px] p-5 text-center shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+            <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-[#4F46E5] to-blue-600 text-white font-extrabold text-xl flex items-center justify-center shadow-md shadow-indigo-200/70 mb-3">
+              ${escapeHtml(initials)}
+            </div>
+            <h2 class="text-base font-extrabold text-[#0F172A]">${escapeHtml(state.user.name)}</h2>
+            <p class="text-xs text-[#64748B] mt-0.5">${escapeHtml(state.user.email)}</p>
+            <span class="inline-block mt-2.5 text-[11px] font-bold px-3 py-1 rounded-full bg-indigo-50 text-[#4F46E5]">
+              ${escapeHtml(state.user.level || 'Student')}
+            </span>
+          </div>
+
+          <!-- 3 Stat Tiles -->
+          <div class="grid grid-cols-3 gap-2.5">
+            <div class="bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-[20px] p-3 text-center shadow-xs">
+              <p class="text-base font-extrabold">🔥 ${state.streakCount}</p>
+              <p class="text-[10px] font-bold text-amber-50 mt-0.5">Day Streak</p>
+            </div>
+            <div class="bg-white border border-[#E2E8F0] rounded-[20px] p-3 text-center">
+              <p class="text-base font-extrabold text-[#10B981]">${lessonsDoneCount}</p>
+              <p class="text-[10px] font-bold text-[#64748B] mt-0.5">Lessons Done</p>
+            </div>
+            <div class="bg-white border border-[#E2E8F0] rounded-[20px] p-3 text-center">
+              <p class="text-base font-extrabold text-[#4F46E5]">${savedBooksCount}</p>
+              <p class="text-[10px] font-bold text-[#64748B] mt-0.5">Saved Books</p>
+            </div>
+          </div>
+
+          <!-- Daily Study Goal Card -->
+          <div class="bg-white border border-[#E2E8F0] rounded-[22px] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+            <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#64748B]">Daily Study Goal</p>
+            <p class="text-xs text-[#64748B] mt-1">How many study tasks will you finish each day?</p>
+
+            <div class="grid grid-cols-3 gap-2 my-3">
+              ${[1, 3, 5]
+                .map((goal) => {
+                  const selected = state.dailyGoalTarget === goal;
+                  const label = `${goal} task${goal === 1 ? '' : 's'}`;
+                  return `
+                    <button
+                      type="button"
+                      onclick="setDailyGoalTarget(${goal})"
+                      class="py-2.5 px-2 rounded-full text-xs font-extrabold border transition-all ${
+                        selected
+                          ? 'bg-[#4F46E5] text-white border-[#4F46E5] shadow-xs'
+                          : 'bg-white text-[#0F172A] border-[#E2E8F0] hover:border-indigo-300'
+                      }"
+                    >
+                      ${selected ? `✓ ${label}` : label}
+                    </button>
+                  `;
+                })
+                .join('')}
+            </div>
+
+            <p class="text-[10px] text-[#64748B] leading-relaxed">
+              Each completed lesson, deck, quiz, or book session counts as one task.
+            </p>
+          </div>
+
+          <!-- Daily Study Reminder Card -->
+          <div class="bg-white border border-[#E2E8F0] rounded-[22px] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-base shrink-0">
+                🔔
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-extrabold text-[#0F172A]">Daily Study Reminder</p>
+                <div class="flex items-center gap-2 mt-1">
+                  <label class="inline-flex items-center gap-1 bg-indigo-50 text-[#4F46E5] text-[11px] font-bold px-2.5 py-0.5 rounded-full cursor-pointer">
+                    <span>🕒</span>
+                    <span>${escapeHtml(formatReminderTime12h(state.reminderTime))}</span>
+                    <input
+                      type="time"
+                      value="${escapeHtml(state.reminderTime)}"
+                      onchange="updateReminderTimeSetting(this.value)"
+                      class="sr-only"
+                    />
+                  </label>
+                  <span class="text-[11px] font-bold ${state.reminderEnabled ? 'text-[#10B981]' : 'text-[#64748B]'}">
+                    ${state.reminderEnabled ? 'Active' : 'Off'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onclick="toggleReminderSetting()"
+              aria-label="Toggle Daily Study Reminder"
+              class="w-12 h-7 rounded-full p-1 transition-colors shrink-0 ${
+                state.reminderEnabled ? 'bg-[#10B981]' : 'bg-slate-200'
+              }"
+            >
+              <div class="w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+                state.reminderEnabled ? 'translate-x-5' : 'translate-x-0'
+              }"></div>
+            </button>
+          </div>
+
+          <!-- Sound Effects & Volume Card -->
+          <div class="bg-white border border-[#E2E8F0] rounded-[22px] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center text-base shrink-0">
+                  🔊
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-extrabold text-[#0F172A]">Sound Effects</p>
+                  <p class="text-[11px] text-[#64748B] truncate">Soft chimes for flips, answers and streak wins.</p>
+                  <p class="text-[11px] font-bold mt-0.5 ${state.soundEffectsEnabled ? 'text-[#10B981]' : 'text-[#64748B]'}">
+                    ${state.soundEffectsEnabled ? 'Active' : 'Muted'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onclick="toggleSoundEffectsSetting()"
+                aria-label="Toggle Sound Effects"
+                class="w-12 h-7 rounded-full p-1 transition-colors shrink-0 ${
+                  state.soundEffectsEnabled ? 'bg-[#10B981]' : 'bg-slate-200'
+                }"
+              >
+                <div class="w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+                  state.soundEffectsEnabled ? 'translate-x-5' : 'translate-x-0'
+                }"></div>
+              </button>
+            </div>
+
+            <!-- Volume Slider Control -->
+            <div class="pt-2.5 border-t border-slate-100 flex items-center gap-2.5 ${
+              state.soundEffectsEnabled ? '' : 'opacity-55'
+            }">
+              <span class="text-xs shrink-0">${state.soundVolume === 0 || !state.soundEffectsEnabled ? '🔇' : '🔉'}</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value="${state.soundVolume}"
+                aria-label="Sound Effects Volume"
+                onchange="updateSoundVolumeSetting(this.value)"
+                class="flex-1 accent-[#4F46E5] h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+              />
+              <span class="text-[11px] font-extrabold text-[#4F46E5] w-9 text-right shrink-0">
+                ${state.soundEffectsEnabled ? state.soundVolume : 0}%
+              </span>
+            </div>
+          </div>
+
+          <!-- Dark Mode Card -->
+          <div class="bg-white border border-[#E2E8F0] rounded-[22px] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center text-base shrink-0">
+                ${state.darkMode ? '🌙' : '☀️'}
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-extrabold text-[#0F172A]">Dark Mode</p>
+                <p class="text-[11px] text-[#64748B] truncate">Comfortable dark theme for night studying.</p>
+                <p class="text-[11px] font-bold mt-0.5 ${state.darkMode ? 'text-[#4F46E5]' : 'text-[#64748B]'}">
+                  ${state.darkMode ? 'On' : 'Off'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onclick="toggleDarkModeSetting()"
+              aria-label="Toggle Dark Mode"
+              class="w-12 h-7 rounded-full p-1 transition-colors shrink-0 ${
+                state.darkMode ? 'bg-[#4F46E5]' : 'bg-slate-200'
+              }"
+            >
+              <div class="w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+                state.darkMode ? 'translate-x-5' : 'translate-x-0'
+              }"></div>
+            </button>
+          </div>
+
+          <!-- Log Out Button -->
+          <button
+            type="button"
+            onclick="handleLogout()"
+            class="w-full py-3.5 px-4 rounded-[20px] bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-extrabold flex items-center justify-center gap-2 transition-all"
+          >
+            <span>↪</span>
+            <span>Log Out of StudEase</span>
+          </button>
+
+          <p class="text-center text-[10px] text-[#64748B] pt-1">
+            StudEase • daily goals, streaks and resources in one place
+          </p>
+        </div>
+      `;
+    }
+
+    function selectStreakDay(day) {
+      state.selectedCalendarDay = day;
+      renderApp();
+    }
+
+    function renderStreakScreen() {
+      const days = Array.from({ length: 30 }, (_, i) => i + 1);
+      const isStudiedDay = state.studyDays.includes(state.selectedCalendarDay);
+
+      return `
+        <div class="pt-1 mb-4">
+          <h1 class="text-[22px] font-extrabold tracking-tight text-[#0F172A]">Streak &amp; Calendar</h1>
+          <p class="text-xs text-[#64748B] mt-0.5">Daily consistency &amp; study logs</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5 mb-4">
+          <div class="bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-[20px] p-3 text-center">
+            <p class="text-lg font-extrabold">🔥 ${state.streakCount}</p>
+            <p class="text-[10px] font-bold text-amber-50">Current</p>
+          </div>
+          <div class="bg-white border border-[#E2E8F0] rounded-[20px] p-3 text-center">
+            <p class="text-lg font-extrabold text-[#4F46E5]">${state.bestStreak}</p>
+            <p class="text-[10px] font-bold text-[#64748B]">Best Streak</p>
+          </div>
+          <div class="bg-white border border-[#E2E8F0] rounded-[20px] p-3 text-center">
+            <p class="text-lg font-extrabold text-[#10B981]">${state.totalSessions}</p>
+            <p class="text-[10px] font-bold text-[#64748B]">Sessions</p>
+          </div>
+        </div>
+
+        <div class="bg-white border border-[#E2E8F0] rounded-[22px] p-4 mb-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-extrabold text-[#0F172A]">November 2026</h2>
+            <span class="text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full">🔥 = Study Day</span>
+          </div>
+          <div class="grid grid-cols-7 gap-1.5 text-center">
+            ${['S', 'M', 'T', 'W', 'T', 'F', 'S']
+              .map((d) => `<span class="text-[10px] font-extrabold text-[#64748B]">${d}</span>`)
+              .join('')}
+            ${days
+              .map((d) => {
+                const studied = state.studyDays.includes(d);
+                const selected = state.selectedCalendarDay === d;
+                return `
+                  <button
+                    type="button"
+                    onclick="selectStreakDay(${d})"
+                    class="h-9 rounded-xl text-xs font-bold flex flex-col items-center justify-center transition-all ${
+                      selected
+                        ? 'bg-[#4F46E5] text-white shadow-xs'
+                        : studied
+                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                        : 'bg-slate-50 text-slate-600'
+                    }"
+                  >
+                    <span>${d}</span>
+                    ${studied ? '<span class="text-[8px] leading-none">🔥</span>' : ''}
+                  </button>
+                `;
+              })
+              .join('')}
+          </div>
+        </div>
+
+        <div class="bg-white border border-[#E2E8F0] rounded-[20px] p-4">
+          <p class="text-xs font-extrabold text-[#0F172A] mb-1">Activity on Nov ${state.selectedCalendarDay}, 2026</p>
+          <p class="text-xs text-[#64748B]">
+            ${
+              isStudiedDay
+                ? '🔥 Study session recorded! Completed lessons, flashcards, or quizzes.'
+                : 'No study sessions logged on this date.'
+            }
+          </p>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 10. MODALS: MANAGE COURSES & MANAGE LESSONS (WITH PDF UPLOAD)
+    // =========================================================================
+    function openModal(html) {
+      const root = document.getElementById('modal-root');
+      root.innerHTML = `<div class="animate-sheet w-full bg-white rounded-t-[28px] sm:rounded-[26px] max-h-[88%] flex flex-col overflow-hidden shadow-2xl border border-slate-200">${html}</div>`;
+      root.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      const root = document.getElementById('modal-root');
+      if (!root) return;
+      root.classList.add('hidden');
+      root.innerHTML = '';
+    }
+
+    let selectedNewCourseColor = 'indigo';
+
+    function pickCourseColor(colorKey) {
+      selectedNewCourseColor = colorKey;
+      openManageCoursesModal();
+    }
+
+    function openManageCoursesModal() {
+      const colorKeys = Object.keys(COLOR_MAP);
+      const colorsHtml = colorKeys
+        .map((key) => {
+          const c = COLOR_MAP[key];
+          const isPicked = selectedNewCourseColor === key;
+          return `
+            <button
+              type="button"
+              onclick="pickCourseColor('${key}')"
+              class="px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${c.bg} ${c.text} ${
+                isPicked ? `ring-2 ${c.ring} border-transparent` : c.border
+              }"
+            >
+              ${c.label}
+            </button>
+          `;
+        })
+        .join('');
+
+      const existingCoursesHtml =
+        state.courses.length === 0
+          ? `<p class="text-xs text-[#64748B] py-2">No courses available. Add one above.</p>`
+          : state.courses
+              .map((c) => {
+                const theme = COLOR_MAP[c.color] || COLOR_MAP.indigo;
+                return `
+                  <div class="flex items-center justify-between gap-2 bg-slate-50 border border-slate-200/80 rounded-2xl px-3 py-2.5">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span class="w-3 h-3 rounded-full ${theme.solid} shrink-0"></span>
+                      <div class="min-w-0">
+                        <p class="text-xs font-bold text-[#0F172A] truncate">${escapeHtml(c.name)}</p>
+                        <p class="text-[10px] text-[#64748B] truncate">${c.lessons.length} lessons • ${escapeHtml(c.desc)}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onclick="deleteCourse('${escapeHtml(c.id)}')"
+                      title="Delete course"
+                      class="shrink-0 text-xs font-bold text-rose-600 hover:bg-rose-50 px-2.5 py-1.5 rounded-xl border border-rose-200 transition-all"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                `;
+              })
+              .join('');
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-[#0F172A]">Manage Courses</h2>
+            <p class="text-[11px] text-[#64748B]">Add new subjects or remove existing ones</p>
+          </div>
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+
+        <div class="p-5 overflow-y-auto no-scrollbar space-y-5">
+          <!-- Add Course Form -->
+          <form onsubmit="handleAddCourse(event)" class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-3.5 space-y-3">
+            <p class="text-xs font-extrabold text-[#4F46E5]">＋ Add New Course</p>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Course Name</label>
+              <input
+                id="new-course-name"
+                type="text"
+                required
+                placeholder="e.g., Computer Science"
+                class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#4F46E5]"
+              />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Short Description</label>
+              <input
+                id="new-course-desc"
+                type="text"
+                placeholder="e.g., Data Structures & Algorithms"
+                class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#4F46E5]"
+              />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1.5">Badge Color</label>
+              <div class="flex flex-wrap gap-1.5">${colorsHtml}</div>
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-xs transition-all"
+            >
+              Add Course
+            </button>
+          </form>
+
+          <!-- Existing Courses List -->
+          <div>
+            <p class="text-xs font-extrabold text-slate-800 mb-2">Existing Courses (${state.courses.length})</p>
+            <p class="text-[11px] text-[#64748B] mb-2.5">Deleting a course moves its linked flashcards, quizzes, and books to <strong>Uncategorized</strong>.</p>
+            <div class="space-y-2">${existingCoursesHtml}</div>
+          </div>
+        </div>
+      `);
+    }
+
+    function handleAddCourse(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById('new-course-name');
+      const descInput = document.getElementById('new-course-desc');
+      const name = nameInput.value.trim();
+      if (!name) return;
+
+      const newCourse = {
+        id: uid('course'),
+        name,
+        color: selectedNewCourseColor,
+        desc: descInput.value.trim() || 'Custom subject module',
+        lessons: [],
+      };
+      state.courses.push(newCourse);
+      renderApp();
+      openManageCoursesModal();
+      showToast(`Added course "${name}"`, '📚');
+    }
+
+    function deleteCourse(courseId) {
+      const course = getCourse(courseId);
+      if (!course) return;
+      const deletedName = course.name;
+
+      state.courses = state.courses.filter((c) => c.id !== courseId);
+
+      state.decks.forEach((d) => {
+        if (d.courseId === courseId) d.courseId = null;
+      });
+      state.quizzes.forEach((q) => {
+        if (q.courseId === courseId) q.courseId = null;
+      });
+      state.books.forEach((b) => {
+        if (b.courseId === courseId) b.courseId = null;
+      });
+
+      if (state.activeCourseId === courseId) {
+        state.activeCourseId = null;
+      }
+      if (state.toolsCourseFilter === courseId) state.toolsCourseFilter = 'all';
+      if (state.resourcesCourseFilter === courseId) state.resourcesCourseFilter = 'all';
+
+      renderApp();
+      openManageCoursesModal();
+      showToast(`Deleted "${deletedName}" (items moved to Uncategorized)`, '🗑️');
+    }
+
+    let pendingLessonPdf = null;
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes <= 0) return '1.1 MB';
+      if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    function onNewLessonPdfSelected(inputEl, courseId) {
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+      pendingLessonPdf = {
+        fileName: file.name,
+        fileSize: formatBytes(file.size),
+        objectUrl: URL.createObjectURL(file),
+        previewText: `Uploaded PDF file "${file.name}" (${formatBytes(file.size)}). Ready to view in the Lesson Reader.`,
+      };
+      openManageLessonsModal(courseId, true);
+      showToast(`Attached "${file.name}"`, '📄');
+    }
+
+    function attachSampleNewLessonPdf(courseId) {
+      const course = getCourse(courseId);
+      const slug = (course?.name || 'Course').replace(/\s+/g, '_');
+      pendingLessonPdf = {
+        fileName: `${slug}_Lecture_Slides.pdf`,
+        fileSize: '1.8 MB',
+        objectUrl: null,
+        previewText: `Sample PDF handout for ${course?.name || 'this lesson'}: includes diagrams, summary tables, and worked review exercises.`,
+      };
+      openManageLessonsModal(courseId, true);
+      showToast(`Attached "${pendingLessonPdf.fileName}"`, '📄');
+    }
+
+    function clearPendingLessonPdf(courseId) {
+      pendingLessonPdf = null;
+      openManageLessonsModal(courseId, true);
+    }
+
+    function openManageLessonsModal(courseId, preserveDraft = false) {
+      const course = getCourse(courseId);
+      if (!course) return;
+      if (!preserveDraft) {
+        pendingLessonPdf = null;
+      }
+
+      const prevTitle = preserveDraft ? document.getElementById('new-lesson-title')?.value || '' : '';
+      const prevTime = preserveDraft ? document.getElementById('new-lesson-time')?.value || '10 min read' : '10 min read';
+      const prevNotes = preserveDraft ? document.getElementById('new-lesson-notes')?.value || '' : '';
+
+      const lessonsListHtml =
+        course.lessons.length === 0
+          ? `<p class="text-xs text-[#64748B] py-2">No lessons in this course yet.</p>`
+          : course.lessons
+              .map(
+                (l) => `
+                <div class="flex items-center justify-between gap-2 bg-slate-50 border border-slate-200/80 rounded-2xl px-3 py-2.5">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <p class="text-xs font-bold text-[#0F172A] truncate">${escapeHtml(l.title)}</p>
+                      ${
+                        l.pdfAttachment
+                          ? `<span class="shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">PDF</span>`
+                          : ''
+                      }
+                    </div>
+                    <p class="text-[10px] text-[#64748B] truncate">${escapeHtml(l.readTime)}${
+                  l.pdfAttachment ? ` • ${escapeHtml(l.pdfAttachment.fileName)}` : ''
+                }</p>
+                  </div>
+                  <button
+                    type="button"
+                    onclick="deleteLesson('${escapeHtml(course.id)}', '${escapeHtml(l.id)}')"
+                    class="shrink-0 text-xs font-bold text-rose-600 hover:bg-rose-50 px-2.5 py-1.5 rounded-xl border border-rose-200"
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
+              `
+              )
+              .join('');
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-[#0F172A]">Manage Lessons</h2>
+            <p class="text-[11px] text-[#64748B]">${escapeHtml(course.name)}</p>
+          </div>
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+
+        <div class="p-5 overflow-y-auto no-scrollbar space-y-5">
+          <!-- Add Lesson Form -->
+          <form onsubmit="handleAddLesson(event, '${escapeHtml(course.id)}')" class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-3.5 space-y-3">
+            <p class="text-xs font-extrabold text-[#4F46E5]">＋ Add New Lesson</p>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Lesson Title</label>
+              <input
+                id="new-lesson-title"
+                type="text"
+                required
+                value="${escapeHtml(prevTitle)}"
+                placeholder="e.g., Integration by Substitution"
+                class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#4F46E5]"
+              />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Estimated Read Time</label>
+              <input
+                id="new-lesson-time"
+                type="text"
+                value="${escapeHtml(prevTime)}"
+                class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#4F46E5]"
+              />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Lesson Notes</label>
+              <textarea
+                id="new-lesson-notes"
+                rows="3"
+                placeholder="Write key concepts, definitions, or formulas..."
+                class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#4F46E5]"
+              >${escapeHtml(prevNotes)}</textarea>
+            </div>
+
+            <!-- Upload Lesson PDF Control -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Lesson PDF Handout (Optional)</label>
+              <input
+                id="new-lesson-pdf-input"
+                type="file"
+                accept=".pdf,application/pdf"
+                class="hidden"
+                onchange="onNewLessonPdfSelected(this, '${escapeHtml(course.id)}')"
+              />
+              ${
+                pendingLessonPdf
+                  ? `
+                <div class="flex items-center justify-between gap-2 bg-white border border-rose-200 rounded-xl px-3 py-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-sm">📄</span>
+                    <div class="min-w-0">
+                      <p class="text-[11px] font-bold text-[#0F172A] truncate">${escapeHtml(pendingLessonPdf.fileName)}</p>
+                      <p class="text-[10px] text-[#64748B]">${escapeHtml(pendingLessonPdf.fileSize)}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onclick="clearPendingLessonPdf('${escapeHtml(course.id)}')"
+                    class="text-[11px] font-bold text-rose-600 hover:underline shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+              `
+                  : `
+                <div class="bg-white border border-dashed border-slate-300 rounded-xl p-2.5 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onclick="document.getElementById('new-lesson-pdf-input').click()"
+                    class="inline-flex items-center gap-1.5 text-xs font-bold text-[#4F46E5] hover:underline"
+                  >
+                    <span>📎</span>
+                    <span>Upload PDF File</span>
+                  </button>
+                  <button
+                    type="button"
+                    onclick="attachSampleNewLessonPdf('${escapeHtml(course.id)}')"
+                    class="text-[10px] font-bold text-slate-500 hover:text-slate-800 bg-slate-100 px-2 py-1 rounded-lg"
+                  >
+                    Use Sample PDF
+                  </button>
+                </div>
+              `
+              }
+            </div>
+
+            <button
+              type="submit"
+              class="w-full bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-xs"
+            >
+              Add Lesson to ${escapeHtml(course.name)}
+            </button>
+          </form>
+
+          <!-- Existing Lessons -->
+          <div>
+            <p class="text-xs font-extrabold text-slate-800 mb-2">Lessons in ${escapeHtml(course.name)} (${course.lessons.length})</p>
+            <div class="space-y-2">${lessonsListHtml}</div>
+          </div>
+        </div>
+      `);
+    }
+
+    function handleAddLesson(e, courseId) {
+      e.preventDefault();
+      const course = getCourse(courseId);
+      if (!course) return;
+      const title = document.getElementById('new-lesson-title').value.trim();
+      const readTime = document.getElementById('new-lesson-time').value.trim() || '10 min read';
+      const notes =
+        document.getElementById('new-lesson-notes').value.trim() ||
+        'Structured study notes for ' + title + '. Review core definitions and worked examples.';
+
+      if (!title) return;
+      course.lessons.push({
+        id: uid('lesson'),
+        title,
+        readTime,
+        completed: false,
+        pdfAttachment: pendingLessonPdf ? { ...pendingLessonPdf } : null,
+        notes,
+      });
+
+      pendingLessonPdf = null;
+      renderApp();
+      openManageLessonsModal(courseId);
+      showToast(`Added lesson "${title}"`, '📖');
+    }
+
+    function deleteLesson(courseId, lessonId) {
+      const course = getCourse(courseId);
+      if (!course) return;
+      course.lessons = course.lessons.filter((l) => l.id !== lessonId);
+      renderApp();
+      openManageLessonsModal(courseId);
+      showToast('Lesson removed', '🗑️');
+    }
+
+    // =========================================================================
+    // 11. MODALS: MANAGE FLASHCARDS, MANAGE QUIZZES, CREATE DECK/QUIZ, ADD BOOK
+    // =========================================================================
+    function reassignDeckCourse(deckId, newCourseId) {
+      const deck = state.decks.find((d) => d.id === deckId);
+      if (!deck) return;
+      deck.courseId = newCourseId || null;
+      const targetName = deck.courseId ? getCourse(deck.courseId)?.name : 'Uncategorized';
+      renderApp();
+      openManageDecksModal();
+      showToast(`Assigned deck to ${targetName}`, '🗂️');
+    }
+
+    function deleteDeck(deckId) {
+      state.decks = state.decks.filter((d) => d.id !== deckId);
+      renderApp();
+      openManageDecksModal();
+      showToast('Flashcard deck deleted', '🗑️');
+    }
+
+    function openManageDecksModal() {
+      const rowsHtml =
+        state.decks.length === 0
+          ? `<p class="text-xs text-[#64748B] py-4 text-center">No flashcard decks available.</p>`
+          : state.decks
+              .map(
+                (deck) => `
+                <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-3 space-y-2.5">
+                  <div class="flex items-start justify-between gap-2">
+                    <div>
+                      <p class="text-xs font-bold text-[#0F172A]">${escapeHtml(deck.title)}</p>
+                      <p class="text-[11px] text-[#64748B]">${deck.cards.length} cards</p>
+                    </div>
+                    <button
+                      type="button"
+                      onclick="deleteDeck('${escapeHtml(deck.id)}')"
+                      class="text-[11px] font-bold text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-200"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="text-[11px] font-bold text-[#64748B] shrink-0">Assigned Course:</label>
+                    <select
+                      onchange="reassignDeckCourse('${escapeHtml(deck.id)}', this.value)"
+                      class="flex-1 text-xs font-bold text-[#0F172A] bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-[#4F46E5]"
+                    >
+                      ${buildCourseOptionsHtml(deck.courseId)}
+                    </select>
+                  </div>
+                </div>
+              `
+              )
+              .join('');
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-[#0F172A]">Manage Flashcards</h2>
+            <p class="text-[11px] text-[#64748B]">Reassign courses or delete flashcard decks</p>
+          </div>
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+        <div class="p-5 overflow-y-auto no-scrollbar space-y-3">
+          ${rowsHtml}
+        </div>
+      `);
+    }
+
+    function reassignQuizCourse(quizId, newCourseId) {
+      const quiz = state.quizzes.find((q) => q.id === quizId);
+      if (!quiz) return;
+      quiz.courseId = newCourseId || null;
+      const targetName = quiz.courseId ? getCourse(quiz.courseId)?.name : 'Uncategorized';
+      renderApp();
+      openManageQuizzesModal();
+      showToast(`Assigned quiz to ${targetName}`, '📝');
+    }
+
+    function deleteQuiz(quizId) {
+      state.quizzes = state.quizzes.filter((q) => q.id !== quizId);
+      renderApp();
+      openManageQuizzesModal();
+      showToast('Quiz deleted', '🗑️');
+    }
+
+    function openManageQuizzesModal() {
+      const rowsHtml =
+        state.quizzes.length === 0
+          ? `<p class="text-xs text-[#64748B] py-4 text-center">No quizzes available.</p>`
+          : state.quizzes
+              .map(
+                (quiz) => `
+                <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-3 space-y-2.5">
+                  <div class="flex items-start justify-between gap-2">
+                    <div>
+                      <p class="text-xs font-bold text-[#0F172A]">${escapeHtml(quiz.title)}</p>
+                      <p class="text-[11px] text-[#64748B]">${quiz.questions.length} questions</p>
+                    </div>
+                    <button
+                      type="button"
+                      onclick="deleteQuiz('${escapeHtml(quiz.id)}')"
+                      class="text-[11px] font-bold text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-200"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="text-[11px] font-bold text-[#64748B] shrink-0">Assigned Course:</label>
+                    <select
+                      onchange="reassignQuizCourse('${escapeHtml(quiz.id)}', this.value)"
+                      class="flex-1 text-xs font-bold text-[#0F172A] bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-[#4F46E5]"
+                    >
+                      ${buildCourseOptionsHtml(quiz.courseId)}
+                    </select>
+                  </div>
+                </div>
+              `
+              )
+              .join('');
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-[#0F172A]">Manage Quizzes</h2>
+            <p class="text-[11px] text-[#64748B]">Reassign courses or delete quizzes</p>
+          </div>
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+        <div class="p-5 overflow-y-auto no-scrollbar space-y-3">
+          ${rowsHtml}
+        </div>
+      `);
+    }
+
+    function openCreateDeckModal() {
+      const defaultCourse =
+        state.toolsCourseFilter !== 'all' && state.toolsCourseFilter !== 'uncategorized'
+          ? state.toolsCourseFilter
+          : state.courses[0]?.id || '';
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-[#0F172A]">Create Flashcard Deck</h2>
+            <p class="text-[11px] text-[#64748B]">Assign a course and add front/back pairs</p>
+          </div>
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+
+        <form onsubmit="handleCreateDeck(event)" class="p-5 overflow-y-auto no-scrollbar space-y-3.5">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">Deck Title</label>
+            <input id="create-deck-title" type="text" required placeholder="e.g., Trigonometry Identities" class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#4F46E5]" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">Course Category</label>
+            <select id="create-deck-course" class="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#4F46E5]">
+              ${buildCourseOptionsHtml(defaultCourse)}
+            </select>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 space-y-2.5">
+            <p class="text-[11px] font-extrabold text-slate-700">Card 1</p>
+            <input id="create-deck-q1" type="text" required placeholder="Front (Term / Question)" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2" />
+            <input id="create-deck-a1" type="text" required placeholder="Back (Definition / Answer)" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2" />
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 space-y-2.5">
+            <p class="text-[11px] font-extrabold text-slate-700">Card 2 (Optional)</p>
+            <input id="create-deck-q2" type="text" placeholder="Front (Term / Question)" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2" />
+            <input id="create-deck-a2" type="text" placeholder="Back (Definition / Answer)" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2" />
+          </div>
+
+          <button type="submit" class="w-full bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-bold py-3 rounded-2xl shadow-sm">
+            Save Flashcard Deck
+          </button>
+        </form>
+      `);
+    }
+
+    function handleCreateDeck(e) {
+      e.preventDefault();
+      const title = document.getElementById('create-deck-title').value.trim();
+      const courseId = document.getElementById('create-deck-course').value || null;
+      const q1 = document.getElementById('create-deck-q1').value.trim();
+      const a1 = document.getElementById('create-deck-a1').value.trim();
+      const q2 = document.getElementById('create-deck-q2').value.trim();
+      const a2 = document.getElementById('create-deck-a2').value.trim();
+
+      if (!title || !q1 || !a1) return;
+      const cards = [{ q: q1, a: a1 }];
+      if (q2 && a2) cards.push({ q: q2, a: a2 });
+
+      state.decks.unshift({
+        id: uid('deck'),
+        title,
+        courseId,
+        cards,
+      });
+
+      closeModal();
+      renderApp();
+      showToast(`Created deck "${title}"`, '🗂️');
+    }
+
+    function openCreateQuizModal() {
+      const defaultCourse =
+        state.toolsCourseFilter !== 'all' && state.toolsCourseFilter !== 'uncategorized'
+          ? state.toolsCourseFilter
+          : state.courses[0]?.id || '';
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-[#0F172A]">Create Practice Quiz</h2>
+            <p class="text-[11px] text-[#64748B]">Assign a course and write multiple-choice items</p>
+          </div>
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+
+        <form onsubmit="handleCreateQuiz(event)" class="p-5 overflow-y-auto no-scrollbar space-y-3.5">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">Quiz Title</label>
+            <input id="create-quiz-title" type="text" required placeholder="e.g., Kinematics Quick Check" class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#4F46E5]" />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">Course Category</label>
+            <select id="create-quiz-course" class="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#4F46E5]">
+              ${buildCourseOptionsHtml(defaultCourse)}
+            </select>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 space-y-2">
+            <p class="text-[11px] font-extrabold text-slate-700">Question 1</p>
+            <input id="create-quiz-prompt" type="text" required placeholder="Question prompt" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2" />
+            <input id="create-quiz-correct" type="text" required placeholder="Correct answer" class="w-full text-xs bg-emerald-50/50 border border-emerald-200 rounded-xl px-3 py-2" />
+            <input id="create-quiz-wrong1" type="text" required placeholder="Distractor option 2" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2" />
+            <input id="create-quiz-wrong2" type="text" placeholder="Distractor option 3 (optional)" class="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2" />
+          </div>
+
+          <button type="submit" class="w-full bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-bold py-3 rounded-2xl shadow-sm">
+            Save Quiz
+          </button>
+        </form>
+      `);
+    }
+
+    function handleCreateQuiz(e) {
+      e.preventDefault();
+      const title = document.getElementById('create-quiz-title').value.trim();
+      const courseId = document.getElementById('create-quiz-course').value || null;
+      const prompt = document.getElementById('create-quiz-prompt').value.trim();
+      const correct = document.getElementById('create-quiz-correct').value.trim();
+      const wrong1 = document.getElementById('create-quiz-wrong1').value.trim();
+      const wrong2 = document.getElementById('create-quiz-wrong2').value.trim() || 'None of the above';
+
+      if (!title || !prompt || !correct || !wrong1) return;
+
+      state.quizzes.unshift({
+        id: uid('quiz'),
+        title,
+        courseId,
+        questions: [
+          {
+            prompt,
+            options: [correct, wrong1, wrong2, 'All of the above'],
+            answerIndex: 0,
+          },
+        ],
+      });
+
+      closeModal();
+      renderApp();
+      showToast(`Created quiz "${title}"`, '📝');
+    }
+
+    function openAddBookModal() {
+      const defaultCourse =
+        state.resourcesCourseFilter !== 'all' && state.resourcesCourseFilter !== 'uncategorized'
+          ? state.resourcesCourseFilter
+          : '';
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-[#0F172A]">Add Resource Book</h2>
+            <p class="text-[11px] text-[#64748B]">Categorize under a course or keep Uncategorized</p>
+          </div>
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+
+        <form onsubmit="handleAddBook(event)" class="p-5 overflow-y-auto no-scrollbar space-y-3.5">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">Book / PDF Title</label>
+            <input id="add-book-title" type="text" required placeholder="e.g., University Physics Vol. 1" class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#4F46E5]" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">Author &amp; Page Count</label>
+            <input id="add-book-author" type="text" placeholder="e.g., Young & Freedman • 720 pages" class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#4F46E5]" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">Course Category</label>
+            <select id="add-book-course" class="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#4F46E5]">
+              ${buildCourseOptionsHtml(defaultCourse)}
+            </select>
+          </div>
+          <button type="submit" class="w-full bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-bold py-3 rounded-2xl shadow-sm">
+            Save Book to Resources
+          </button>
+        </form>
+      `);
+    }
+
+    function handleAddBook(e) {
+      e.preventDefault();
+      const title = document.getElementById('add-book-title').value.trim();
+      const authorRaw = document.getElementById('add-book-author').value.trim();
+      const courseId = document.getElementById('add-book-course').value || null;
+      if (!title) return;
+
+      state.books.unshift({
+        id: uid('book'),
+        title,
+        author: authorRaw || 'Uploaded PDF Document',
+        pages: '180 pages',
+        progressPct: 0,
+        courseId,
+      });
+
+      closeModal();
+      renderApp();
+      showToast(`Added "${title}" to Resources`, '📕');
+    }
+
+    // =========================================================================
+    // 12. GENERATE WITH AI MODAL (ACCESSIBLE FROM COURSES & TOOLS)
+    // =========================================================================
+    let aiModalState = {
+      mode: 'both', // 'flashcards' | 'quiz' | 'both'
+      courseId: null,
+      notes: '',
+      fileAttached: false,
+      previewTitle: '',
+      previewCards: [],
+      previewQuestions: [],
+    };
+
+    function openGenerateAiModal(preselectedCourseId = null) {
+      aiModalState = {
+        mode: 'both',
+        courseId: preselectedCourseId ?? null,
+        notes: '',
+        fileAttached: false,
+        previewTitle: '',
+        previewCards: [],
+        previewQuestions: [],
+      };
+      renderGenerateAiModal();
+    }
+
+    function setAiMode(mode) {
+      aiModalState.mode = mode;
+      renderGenerateAiModal();
+    }
+
+    function setAiCourse(courseId) {
+      aiModalState.courseId = courseId || null;
+    }
+
+    function toggleAiAttachment() {
+      aiModalState.fileAttached = !aiModalState.fileAttached;
+      if (aiModalState.fileAttached && !aiModalState.notes.trim()) {
+        fillAiSampleNotes();
+        return;
+      }
+      renderGenerateAiModal();
+    }
+
+    function fillAiSampleNotes() {
+      const course = getCourse(aiModalState.courseId);
+      const name = (course?.name || '').toLowerCase();
+      if (name.includes('math')) {
+        aiModalState.notes =
+          'Chain Rule : Method for finding the derivative of composite functions f(g(x)).\n' +
+          'Critical Point : Interior point where the first derivative equals zero or is undefined.\n' +
+          'Definite Integral : Net signed area between a function curve and the x-axis on [a, b].\n' +
+          'Inflection Point : Point on a curve where concavity changes sign.';
+      } else if (name.includes('english')) {
+        aiModalState.notes =
+          'Synecdoche : Figure of speech where a part represents the whole or vice versa.\n' +
+          'Counterargument : Opposing viewpoint addressed in an essay to strengthen credibility.\n' +
+          'Syntax : Arrangement of words and phrases to create well-formed sentences.\n' +
+          'Tone : The author’s attitude toward the subject and audience conveyed through word choice.';
+      } else {
+        aiModalState.notes =
+          'Mitochondria : Organelle that generates most of a cell’s ATP via aerobic respiration.\n' +
+          'Osmosis : Net movement of water molecules across a semipermeable membrane.\n' +
+          'Mitosis : Cell division producing two genetically identical diploid daughter cells.\n' +
+          'Enzyme : Biological catalyst that speeds up reactions by lowering activation energy.';
+      }
+      renderGenerateAiModal();
+    }
+
+    function runAiGeneration() {
+      const textarea = document.getElementById('ai-notes-input');
+      if (textarea) aiModalState.notes = textarea.value;
+
+      const raw = aiModalState.notes.trim();
+      const course = getCourse(aiModalState.courseId);
+      const topicLabel = course ? course.name : 'General Study';
+
+      const lines = raw
+        .split(/\n+/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      const pairs = [];
+      lines.forEach((line) => {
+        const colonIdx = line.indexOf(':');
+        const dashIdx = line.indexOf(' - ');
+        if (colonIdx > 1) {
+          pairs.push({
+            q: line.slice(0, colonIdx).replace(/^[-•*]\s*/, '').trim(),
+            a: line.slice(colonIdx + 1).trim(),
+          });
+        } else if (dashIdx > 1) {
+          pairs.push({
+            q: line.slice(0, dashIdx).replace(/^[-•*]\s*/, '').trim(),
+            a: line.slice(dashIdx + 3).trim(),
+          });
+        } else if (line.length > 8) {
+          const words = line.split(/\s+/);
+          const term = words.slice(0, Math.min(3, words.length)).join(' ');
+          pairs.push({ q: `Key Concept: ${term}`, a: line });
+        }
+      });
+
+      if (pairs.length === 0) {
+        pairs.push(
+          { q: `${topicLabel} Core Principle 1`, a: 'Fundamental relationship connecting theory to problem-solving.' },
+          { q: `${topicLabel} Core Principle 2`, a: 'Key mechanism or formula frequently tested in assessments.' },
+          { q: `${topicLabel} Core Principle 3`, a: 'Practical application and edge-case condition to remember.' }
+        );
+      }
+
+      aiModalState.previewTitle = `${topicLabel} • AI Study Set`;
+      aiModalState.previewCards =
+        aiModalState.mode === 'flashcards' || aiModalState.mode === 'both' ? pairs : [];
+
+      aiModalState.previewQuestions =
+        aiModalState.mode === 'quiz' || aiModalState.mode === 'both'
+          ? pairs.map((p, idx) => {
+              const otherAnswers = pairs.filter((_, i) => i !== idx).map((x) => x.a);
+              return {
+                prompt: `Which statement best defines "${p.q}"?`,
+                options: [
+                  p.a,
+                  otherAnswers[0] || 'An unrelated secondary process in another domain.',
+                  otherAnswers[1] || 'A measurement of external environmental resistance.',
+                  'None of the listed descriptions apply.',
+                ],
+                answerIndex: 0,
+              };
+            })
+          : [];
+
+      renderGenerateAiModal();
+      playPrototypeChime(780);
+      showToast('Gemini generated your study preview!', '✨');
+    }
+
+    function removePreviewCard(index) {
+      aiModalState.previewCards.splice(index, 1);
+      renderGenerateAiModal();
+    }
+
+    function removePreviewQuestion(index) {
+      aiModalState.previewQuestions.splice(index, 1);
+      renderGenerateAiModal();
+    }
+
+    function saveGeneratedAiContent() {
+      const titleInput = document.getElementById('ai-preview-title');
+      const finalTitle = (titleInput?.value || aiModalState.previewTitle || 'AI Study Set').trim();
+      const targetCourseId = aiModalState.courseId || null;
+
+      let savedParts = [];
+      if (aiModalState.previewCards.length > 0) {
+        state.decks.unshift({
+          id: uid('ai_deck'),
+          title: `${finalTitle} (Cards)`,
+          courseId: targetCourseId,
+          cards: [...aiModalState.previewCards],
+        });
+        savedParts.push(`${aiModalState.previewCards.length} flashcards`);
+      }
+
+      if (aiModalState.previewQuestions.length > 0) {
+        state.quizzes.unshift({
+          id: uid('ai_quiz'),
+          title: `${finalTitle} (Quiz)`,
+          courseId: targetCourseId,
+          questions: [...aiModalState.previewQuestions],
+        });
+        savedParts.push(`${aiModalState.previewQuestions.length} quiz questions`);
+      }
+
+      const courseName = targetCourseId ? getCourse(targetCourseId)?.name : 'Uncategorized';
+      closeModal();
+      renderApp();
+      recordStudyProgress(`Saved ${savedParts.join(' & ')} to ${courseName}`);
+    }
+
+    function renderGenerateAiModal() {
+      const hasPreview = aiModalState.previewCards.length > 0 || aiModalState.previewQuestions.length > 0;
+
+      const previewHtml = !hasPreview
+        ? ''
+        : `
+          <div class="border-t border-slate-200 pt-4 space-y-3">
+            <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-2xl px-3.5 py-2.5">
+              <div>
+                <p class="text-xs font-extrabold text-emerald-800">✨ Generated with Gemini</p>
+                <p class="text-[11px] text-emerald-700">
+                  ${aiModalState.previewCards.length} flashcards • ${aiModalState.previewQuestions.length} questions
+                </p>
+              </div>
+              <span class="text-[10px] font-bold bg-white text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">Editable</span>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Deck / Quiz Set Title</label>
+              <input
+                id="ai-preview-title"
+                type="text"
+                value="${escapeHtml(aiModalState.previewTitle)}"
+                class="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
+              />
+            </div>
+
+            ${
+              aiModalState.previewCards.length > 0
+                ? `<div class="space-y-2">
+                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-[#64748B]">Flashcards (${aiModalState.previewCards.length})</p>
+                    ${aiModalState.previewCards
+                      .map(
+                        (c, i) => `
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-start justify-between gap-2">
+                          <div>
+                            <p class="text-xs font-bold text-[#0F172A]">${escapeHtml(c.q)}</p>
+                            <p class="text-[11px] text-[#64748B] mt-0.5">${escapeHtml(c.a)}</p>
+                          </div>
+                          <button type="button" onclick="removePreviewCard(${i})" class="text-rose-500 text-xs font-bold px-1.5">✕</button>
+                        </div>
+                      `
+                      )
+                      .join('')}
+                  </div>`
+                : ''
+            }
+
+            ${
+              aiModalState.previewQuestions.length > 0
+                ? `<div class="space-y-2">
+                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-[#64748B]">Quiz Questions (${aiModalState.previewQuestions.length})</p>
+                    ${aiModalState.previewQuestions
+                      .map(
+                        (q, i) => `
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-start justify-between gap-2">
+                          <div>
+                            <p class="text-xs font-bold text-[#0F172A]">${escapeHtml(q.prompt)}</p>
+                            <p class="text-[11px] text-emerald-700 font-semibold mt-0.5">✓ ${escapeHtml(q.options[0])}</p>
+                          </div>
+                          <button type="button" onclick="removePreviewQuestion(${i})" class="text-rose-500 text-xs font-bold px-1.5">✕</button>
+                        </div>
+                      `
+                      )
+                      .join('')}
+                  </div>`
+                : ''
+            }
+
+            <button
+              type="button"
+              onclick="saveGeneratedAiContent()"
+              class="w-full bg-[#10B981] hover:bg-emerald-600 text-white text-xs font-extrabold py-3 rounded-2xl shadow-sm transition-all"
+            >
+              ✓ Save to Selected Course
+            </button>
+          </div>
+        `;
+
+      openModal(`
+        <!-- Top Bar -->
+        <div class="px-4 pt-3.5 pb-3 border-b border-slate-100 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="closeModal()" class="text-sm font-extrabold text-slate-700 hover:text-slate-900 px-1.5">←</button>
+            <h2 class="text-base font-extrabold text-[#0F172A]">Generate with AI</h2>
+          </div>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-[#4F46E5] border border-indigo-100">
+            Gemini • Free tier
+          </span>
+        </div>
+
+        <div class="p-4 overflow-y-auto no-scrollbar space-y-3.5">
+          <div>
+            <p class="text-xs font-bold text-[#0F172A]">Create study material</p>
+            <p class="text-[11px] text-[#64748B] mt-0.5">Paste notes or attach a .pdf/.txt file. Gemini builds flashcards and quizzes directly into your chosen course.</p>
+          </div>
+
+          <!-- Segmented Toggle: Flashcards | Quiz | Both -->
+          <div class="bg-slate-100 p-1 rounded-2xl grid grid-cols-3 gap-1">
+            ${['flashcards', 'quiz', 'both']
+              .map((m) => {
+                const label = m === 'flashcards' ? 'Flashcards' : m === 'quiz' ? 'Quiz' : 'Both';
+                const active = aiModalState.mode === m;
+                return `
+                  <button
+                    type="button"
+                    onclick="setAiMode('${m}')"
+                    class="py-1.5 text-xs font-bold rounded-xl transition-all ${
+                      active ? 'bg-white text-[#4F46E5] shadow-xs' : 'text-[#64748B]'
+                    }"
+                  >
+                    ${label}
+                  </button>
+                `;
+              })
+              .join('')}
+          </div>
+
+          <!-- Course Selector Dropdown -->
+          <div>
+            <label class="block text-[10px] font-extrabold uppercase tracking-wider text-[#64748B] mb-1">
+              Assign to Course
+            </label>
+            <select
+              onchange="setAiCourse(this.value)"
+              class="w-full text-xs font-bold text-[#0F172A] bg-white border border-[#E2E8F0] rounded-2xl px-3 py-2.5 focus:outline-none focus:border-[#4F46E5]"
+            >
+              ${buildCourseOptionsHtml(aiModalState.courseId)}
+            </select>
+          </div>
+
+          <!-- Notes Textarea + Fill Sample Link -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-[#4F46E5]">Paste your notes</label>
+              <button type="button" onclick="fillAiSampleNotes()" class="text-[11px] font-bold text-[#4F46E5] hover:underline">
+                Fill sample notes
+              </button>
+            </div>
+            <textarea
+              id="ai-notes-input"
+              rows="4"
+              oninput="aiModalState.notes = this.value"
+              placeholder="Paste lecture notes, definitions, or bullet points..."
+              class="w-full text-xs bg-white border border-[#E2E8F0] rounded-2xl p-3 focus:outline-none focus:border-[#4F46E5]"
+            >${escapeHtml(aiModalState.notes)}</textarea>
+          </div>
+
+          <!-- Simulated Attach PDF/TXT Box -->
+          <div class="flex items-center justify-between bg-slate-50 border border-[#E2E8F0] rounded-2xl px-3.5 py-2.5">
+            <div class="flex items-center gap-2.5">
+              <span class="text-base">📄</span>
+              <div>
+                <p class="text-xs font-bold text-[#0F172A]">
+                  ${aiModalState.fileAttached ? 'Lecture_Module_Notes.pdf' : 'No file attached'}
+                </p>
+                <p class="text-[10px] text-[#64748B]">
+                  ${aiModalState.fileAttached ? '1.2 MB • Ready to extract' : 'PDF or TXT • max 20 MB'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onclick="toggleAiAttachment()"
+              class="text-xs font-bold text-[#4F46E5] hover:underline"
+            >
+              ${aiModalState.fileAttached ? 'Remove' : 'Attach'}
+            </button>
+          </div>
+
+          <!-- Generate CTA -->
+          <button
+            type="button"
+            onclick="runAiGeneration()"
+            class="w-full flex items-center justify-center gap-1.5 bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-extrabold py-3 rounded-2xl shadow-sm transition-all"
+          >
+            <span>✨</span>
+            <span>Generate Study Material</span>
+          </button>
+
+          ${previewHtml}
+        </div>
+      `);
+    }
+
+    // =========================================================================
+    // 13. INTERACTIVE STUDY PLAYERS (LESSON READER + PDF, 3D DECK, QUIZ, BOOK)
+    // =========================================================================
+    let lessonPdfPreviewExpanded = false;
+
+    function toggleLessonPdfPreview(courseId, lessonId) {
+      lessonPdfPreviewExpanded = !lessonPdfPreviewExpanded;
+      openLessonReaderModal(courseId, lessonId, true);
+    }
+
+    function onExistingLessonPdfUploaded(inputEl, courseId, lessonId) {
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+      const course = getCourse(courseId);
+      const lesson = course?.lessons.find((l) => l.id === lessonId);
+      if (!lesson) return;
+
+      lesson.pdfAttachment = {
+        fileName: file.name,
+        fileSize: formatBytes(file.size),
+        objectUrl: URL.createObjectURL(file),
+        previewText: `Uploaded PDF "${file.name}" (${formatBytes(file.size)}).`,
+      };
+      lessonPdfPreviewExpanded = true;
+      renderApp();
+      openLessonReaderModal(courseId, lessonId, true);
+      showToast(`Uploaded "${file.name}" to lesson`, '📄');
+    }
+
+    function attachSamplePdfToLesson(courseId, lessonId) {
+      const course = getCourse(courseId);
+      const lesson = course?.lessons.find((l) => l.id === lessonId);
+      if (!lesson) return;
+
+      const cleanTitle = lesson.title.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '');
+      lesson.pdfAttachment = {
+        fileName: `${cleanTitle || 'Lesson'}_Notes.pdf`,
+        fileSize: '1.3 MB',
+        objectUrl: null,
+        previewText: `Attached PDF study packet for "${lesson.title}" — contains annotated diagrams, key equations, and summary review questions.`,
+      };
+      lessonPdfPreviewExpanded = true;
+      renderApp();
+      openLessonReaderModal(courseId, lessonId, true);
+      showToast(`Attached "${lesson.pdfAttachment.fileName}"`, '📄');
+    }
+
+    function removeLessonPdf(courseId, lessonId) {
+      const course = getCourse(courseId);
+      const lesson = course?.lessons.find((l) => l.id === lessonId);
+      if (!lesson) return;
+      lesson.pdfAttachment = null;
+      lessonPdfPreviewExpanded = false;
+      renderApp();
+      openLessonReaderModal(courseId, lessonId, true);
+      showToast('Removed PDF from lesson', '🗑️');
+    }
+
+    function openLessonReaderModal(courseId, lessonId, keepPreviewState = false) {
+      const course = getCourse(courseId);
+      const lesson = course?.lessons.find((l) => l.id === lessonId);
+      if (!course || !lesson) return;
+      if (!keepPreviewState) {
+        lessonPdfPreviewExpanded = false;
+      }
+
+      const pdf = lesson.pdfAttachment;
+      const pdfSectionHtml = pdf
+        ? `
+          <div class="bg-rose-50/60 border border-rose-200 rounded-2xl p-3.5 space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 font-extrabold text-xs flex items-center justify-center shrink-0">
+                  PDF
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-[#0F172A] truncate">${escapeHtml(pdf.fileName)}</p>
+                  <p class="text-[10px] text-[#64748B]">${escapeHtml(pdf.fileSize)} • Lesson Attachment</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onclick="toggleLessonPdfPreview('${escapeHtml(course.id)}', '${escapeHtml(lesson.id)}')"
+                class="shrink-0 text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-white border border-rose-200 text-rose-700 hover:bg-rose-50"
+              >
+                ${lessonPdfPreviewExpanded ? 'Hide PDF' : 'View PDF'}
+              </button>
+            </div>
+
+            ${
+              lessonPdfPreviewExpanded
+                ? pdf.objectUrl
+                  ? `<div class="rounded-xl overflow-hidden border border-slate-200 bg-white">
+                      <iframe src="${escapeHtml(pdf.objectUrl)}" title="Lesson PDF Preview" class="w-full h-56 border-0"></iframe>
+                    </div>`
+                  : `<div class="bg-white border border-slate-200 rounded-xl p-3 text-[11px] text-slate-700 leading-relaxed">
+                      <p class="font-bold text-slate-900 mb-1">📄 Document Viewer Preview</p>
+                      <p>${escapeHtml(pdf.previewText)}</p>
+                    </div>`
+                : ''
+            }
+
+            <div class="flex items-center justify-between pt-1 border-t border-rose-200/60 text-[11px] font-bold">
+              <button
+                type="button"
+                onclick="document.getElementById('lesson-reader-pdf-input').click()"
+                class="text-[#4F46E5] hover:underline"
+              >
+                Replace PDF
+              </button>
+              <button
+                type="button"
+                onclick="removeLessonPdf('${escapeHtml(course.id)}', '${escapeHtml(lesson.id)}')"
+                class="text-rose-600 hover:underline"
+              >
+                Remove PDF
+              </button>
+            </div>
+          </div>
+        `
+        : `
+          <div class="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <p class="text-xs font-bold text-slate-800">Attach a PDF to this lesson</p>
+              <p class="text-[10px] text-[#64748B]">Upload lecture slides or study handouts</p>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onclick="document.getElementById('lesson-reader-pdf-input').click()"
+                class="text-xs font-bold bg-white hover:bg-indigo-50 text-[#4F46E5] border border-indigo-200 px-3 py-1.5 rounded-xl"
+              >
+                📎 Upload PDF
+              </button>
+              <button
+                type="button"
+                onclick="attachSamplePdfToLesson('${escapeHtml(course.id)}', '${escapeHtml(lesson.id)}')"
+                class="text-[10px] font-bold bg-slate-200/70 text-slate-700 px-2 py-1.5 rounded-xl"
+              >
+                Sample
+              </button>
+            </div>
+          </div>
+        `;
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          ${getCourseBadgeHtml(course.id)}
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+
+        <div class="p-5 overflow-y-auto no-scrollbar space-y-4">
+          <input
+            id="lesson-reader-pdf-input"
+            type="file"
+            accept=".pdf,application/pdf"
+            class="hidden"
+            onchange="onExistingLessonPdfUploaded(this, '${escapeHtml(course.id)}', '${escapeHtml(lesson.id)}')"
+          />
+
+          <div>
+            <h2 class="text-lg font-extrabold text-[#0F172A] leading-snug">${escapeHtml(lesson.title)}</h2>
+            <p class="text-xs text-[#64748B] mt-1">🕒 ${escapeHtml(lesson.readTime)}</p>
+          </div>
+
+          ${pdfSectionHtml}
+
+          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-xs text-slate-800 leading-relaxed whitespace-pre-line">
+            ${escapeHtml(lesson.notes)}
+          </div>
+
+          <button
+            type="button"
+            onclick="toggleLessonComplete('${escapeHtml(course.id)}', '${escapeHtml(lesson.id)}')"
+            class="w-full py-3 rounded-2xl text-xs font-extrabold transition-all ${
+              lesson.completed
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-[#10B981] hover:bg-emerald-600 text-white shadow-sm'
+            }"
+          >
+            ${lesson.completed ? '✓ Lesson Completed (Tap to Undo)' : 'Mark Lesson Complete'}
+          </button>
+        </div>
+      `);
+    }
+
+    function toggleLessonComplete(courseId, lessonId) {
+      const course = getCourse(courseId);
+      const lesson = course?.lessons.find((l) => l.id === lessonId);
+      if (!lesson) return;
+      lesson.completed = !lesson.completed;
+      renderApp();
+      openLessonReaderModal(courseId, lessonId, true);
+      if (lesson.completed) {
+        recordStudyProgress(`Completed "${lesson.title}"`);
+      }
+    }
+
+    // 3D Flashcard Player State
+    let playerDeckState = { deckId: null, index: 0, flipped: false };
+
+    function openDeckPlayerModal(deckId) {
+      playerDeckState = { deckId, index: 0, flipped: false };
+      renderDeckPlayerModal();
+    }
+
+    function flipActiveCard() {
+      playerDeckState.flipped = !playerDeckState.flipped;
+      playPrototypeChime(520);
+      renderDeckPlayerModal();
+    }
+
+    function stepActiveCard(delta) {
+      const deck = state.decks.find((d) => d.id === playerDeckState.deckId);
+      if (!deck || deck.cards.length === 0) return;
+      playerDeckState.index = (playerDeckState.index + delta + deck.cards.length) % deck.cards.length;
+      playerDeckState.flipped = false;
+      renderDeckPlayerModal();
+    }
+
+    function finishDeckSession() {
+      const deck = state.decks.find((d) => d.id === playerDeckState.deckId);
+      closeModal();
+      renderApp();
+      recordStudyProgress(`Completed deck "${deck?.title || 'Flashcards'}"`);
+    }
+
+    function renderDeckPlayerModal() {
+      const deck = state.decks.find((d) => d.id === playerDeckState.deckId);
+      if (!deck) return;
+      const card = deck.cards[playerDeckState.index];
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-extrabold text-[#0F172A]">${escapeHtml(deck.title)}</h2>
+            <p class="text-[11px] text-[#64748B]">Card ${playerDeckState.index + 1} of ${deck.cards.length}</p>
+          </div>
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <!-- 3D Flip Card -->
+          <div onclick="flipActiveCard()" class="cursor-pointer flip-perspective h-56 w-full select-none">
+            <div class="flip-inner ${playerDeckState.flipped ? 'is-flipped' : ''}">
+              <!-- Front -->
+              <div class="flip-face bg-white border-2 border-indigo-200 rounded-[24px] p-5 flex flex-col items-center justify-center text-center shadow-xs">
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-[#4F46E5] bg-indigo-50 px-2.5 py-0.5 rounded-full mb-3">
+                  Term / Prompt
+                </span>
+                <p class="text-base font-extrabold text-[#0F172A]">${escapeHtml(card.q)}</p>
+                <span class="text-[11px] text-[#64748B] mt-4">Tap card to flip ↻</span>
+              </div>
+              <!-- Back -->
+              <div class="flip-face flip-back bg-indigo-600 text-white rounded-[24px] p-5 flex flex-col items-center justify-center text-center shadow-sm">
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-100 bg-white/15 px-2.5 py-0.5 rounded-full mb-3">
+                  Answer / Definition
+                </span>
+                <p class="text-sm font-bold leading-relaxed">${escapeHtml(card.a)}</p>
+                <span class="text-[11px] text-indigo-200 mt-4">Tap card to flip back ↺</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" onclick="stepActiveCard(-1)" class="py-2.5 rounded-2xl border border-[#E2E8F0] text-xs font-bold text-slate-700 hover:bg-slate-50">
+              ← Previous
+            </button>
+            <button type="button" onclick="stepActiveCard(1)" class="py-2.5 rounded-2xl bg-[#4F46E5] text-white text-xs font-bold hover:bg-indigo-700">
+              Next Card →
+            </button>
+          </div>
+
+          <button type="button" onclick="finishDeckSession()" class="w-full py-2.5 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold">
+            ✓ Finish &amp; Log Session
+          </button>
+        </div>
+      `);
+    }
+
+    // Quiz Runner State
+    let quizRunnerState = { quizId: null, qIndex: 0, selectedOption: null, score: 0, finished: false };
+
+    function openQuizRunnerModal(quizId) {
+      quizRunnerState = { quizId, qIndex: 0, selectedOption: null, score: 0, finished: false };
+      renderQuizRunnerModal();
+    }
+
+    function selectQuizOption(optIndex) {
+      if (quizRunnerState.selectedOption !== null) return;
+      const quiz = state.quizzes.find((q) => q.id === quizRunnerState.quizId);
+      const item = quiz?.questions[quizRunnerState.qIndex];
+      if (!item) return;
+
+      quizRunnerState.selectedOption = optIndex;
+      if (optIndex === item.answerIndex) {
+        quizRunnerState.score += 1;
+        playPrototypeChime(700);
+      } else {
+        playPrototypeChime(320);
+      }
+      renderQuizRunnerModal();
+    }
+
+    function advanceQuizQuestion() {
+      const quiz = state.quizzes.find((q) => q.id === quizRunnerState.quizId);
+      if (!quiz) return;
+      if (quizRunnerState.qIndex + 1 < quiz.questions.length) {
+        quizRunnerState.qIndex += 1;
+        quizRunnerState.selectedOption = null;
+        renderQuizRunnerModal();
+      } else {
+        quizRunnerState.finished = true;
+        renderQuizRunnerModal();
+        recordStudyProgress(`Scored ${quizRunnerState.score}/${quiz.questions.length} on "${quiz.title}"`);
+        renderApp();
+      }
+    }
+
+    function renderQuizRunnerModal() {
+      const quiz = state.quizzes.find((q) => q.id === quizRunnerState.quizId);
+      if (!quiz) return;
+
+      if (quizRunnerState.finished) {
+        const pct = Math.round((quizRunnerState.score / quiz.questions.length) * 100);
+        openModal(`
+          <div class="p-6 text-center space-y-4">
+            <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center text-2xl font-extrabold mx-auto">
+              🏆
+            </div>
+            <div>
+              <h2 class="text-lg font-extrabold text-[#0F172A]">Quiz Complete!</h2>
+              <p class="text-xs text-[#64748B] mt-1">${escapeHtml(quiz.title)}</p>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+              <p class="text-2xl font-extrabold text-[#4F46E5]">${quizRunnerState.score} / ${quiz.questions.length}</p>
+              <p class="text-xs font-bold text-emerald-600 mt-0.5">${pct}% Accuracy</p>
+            </div>
+            <button type="button" onclick="closeModal()" class="w-full bg-[#4F46E5] text-white text-xs font-extrabold py-3 rounded-2xl">
+              Done
+            </button>
+          </div>
+        `);
+        return;
+      }
+
+      const item = quiz.questions[quizRunnerState.qIndex];
+      const answered = quizRunnerState.selectedOption !== null;
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-extrabold text-[#0F172A]">${escapeHtml(quiz.title)}</h2>
+            <p class="text-[11px] text-[#64748B]">Question ${quizRunnerState.qIndex + 1} of ${quiz.questions.length}</p>
+          </div>
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+
+        <div class="p-5 space-y-3.5">
+          <p class="text-sm font-bold text-[#0F172A] leading-snug">${escapeHtml(item.prompt)}</p>
+
+          <div class="space-y-2">
+            ${item.options
+              .map((opt, idx) => {
+                let style = 'bg-white border-slate-200 text-slate-800 hover:border-indigo-300';
+                if (answered) {
+                  if (idx === item.answerIndex) {
+                    style = 'bg-emerald-50 border-emerald-500 text-emerald-900 font-bold';
+                  } else if (idx === quizRunnerState.selectedOption) {
+                    style = 'bg-rose-50 border-rose-400 text-rose-900';
+                  } else {
+                    style = 'bg-slate-50 border-slate-200 text-slate-400';
+                  }
+                }
+                return `
+                  <button
+                    type="button"
+                    onclick="selectQuizOption(${idx})"
+                    class="w-full text-left text-xs border rounded-2xl p-3 transition-all ${style}"
+                  >
+                    ${escapeHtml(opt)}
+                  </button>
+                `;
+              })
+              .join('')}
+          </div>
+
+          ${
+            answered
+              ? `<button type="button" onclick="advanceQuizQuestion()" class="w-full bg-[#4F46E5] text-white text-xs font-extrabold py-3 rounded-2xl">
+                  ${quizRunnerState.qIndex + 1 < quiz.questions.length ? 'Next Question →' : 'View Score Summary'}
+                </button>`
+              : ''
+          }
+        </div>
+      `);
+    }
+
+    function openBookReaderModal(bookId) {
+      const book = state.books.find((b) => b.id === bookId);
+      if (!book) return;
+
+      openModal(`
+        <div class="px-5 pt-4 pb-3 border-b border-slate-100 flex items-center justify-between">
+          ${getCourseBadgeHtml(book.courseId)}
+          <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-sm">✕</button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <h2 class="text-base font-extrabold text-[#0F172A]">${escapeHtml(book.title)}</h2>
+            <p class="text-xs text-[#64748B]">${escapeHtml(book.author)} • ${escapeHtml(book.pages)}</p>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-700 leading-relaxed">
+            <p class="font-bold text-slate-900 mb-1">Chapter Excerpt Preview</p>
+            <p>Interactive PDF reading view. Track your reading progress and categorize this textbook under any course or keep it Uncategorized.</p>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs font-bold mb-1">
+              <span class="text-[#64748B]">Reading Progress</span>
+              <span class="text-emerald-600">${book.progressPct}%</span>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-[#10B981]" style="width: ${book.progressPct}%"></div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="advanceBookProgress('${escapeHtml(book.id)}')"
+            class="w-full bg-[#4F46E5] hover:bg-indigo-700 text-white text-xs font-extrabold py-3 rounded-2xl"
+          >
+            + Log 15% Reading Progress
+          </button>
+        </div>
+      `);
+    }
+
+    function advanceBookProgress(bookId) {
+      const book = state.books.find((b) => b.id === bookId);
+      if (!book) return;
+      book.progressPct = Math.min(100, book.progressPct + 15);
+      renderApp();
+      openBookReaderModal(bookId);
+      recordStudyProgress(`Logged reading progress on "${book.title}"`);
+    }
+
+    // Boot prototype
+    window.addEventListener('DOMContentLoaded', () => {
+      renderApp();
+    });
+  </script>
+</body>
+</html>
