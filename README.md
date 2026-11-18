@@ -1,24 +1,35 @@
-# StudEase — An Interactive Learning and Study Companion
+# StudEase: An Interactive Learning and Study Companion
 
-Flutter (Material 3) study app for **ICS26011 · Group 3**
-(Charls Daniel Atilares, John Stanley Dave, Jim Michael Ducut).
+**StudEase** is a Material 3 Android study companion built with Flutter and Firebase that brings courses, lesson PDFs, AI-assisted flashcards and quizzes, open-access books, language practice, and daily streak tracking into one unified workspace.
 
 Courses · Flashcards & Quizzes (AI or manual) · Streak & Calendar · Books & PDFs.
 
-## Stack
+- **Course:** ICS26011 — Applications Development and Emerging Technologies 3
+- **Assessment:** Alternative Assessment (Final Academic Project), AY 2026–2027
+- **Section & Group:** 3CSB — Group 3
+- **Team Members:**
+  - Charls Daniel Atilares (Lead)
+  - John Stanley Dave
+  - Jim Michael Ducut
 
-- Flutter 3.50 / Dart 3.14, Material 3 (`package:material_ui`), Android-first.
-- Firebase Auth + Cloud Firestore (`studease-27e63kemjil`), **no Cloud Storage**.
-- Firebase AI Logic (`firebase_ai`) → `gemini-3.8-flash` (retry `gemini-3.5-flash-lite`),
-  with an offline local notes parser as the guaranteed fallback.
-- In-app PDF reader: `syncfusion_flutter_pdfviewer` (+ `syncfusion_flutter_pdf` for text extraction).
+## Key Features
 
-## First-run setup
+- **Subject-Based Courses & Lesson PDFs:** Organize lessons under customizable subject courses, attach local lecture PDFs, and read them directly in-app.
+- **Interactive Learning Tools:** Review with 3D flip flashcards and multiple-choice quizzes filtered by course, created manually or generated from notes and PDFs via Firebase AI Logic (with an offline parser fallback).
+- **Study Streak & Calendar:** Set a daily study target (1, 3, or 5 tasks), log completed study sessions automatically, and track streaks on a monthly calendar with per-day activity logs.
+- **Learning Resources & Language Practice:** Read course-categorized open-access PDF books with saved page progress, and practice Japanese, Spanish, and French vocabulary decks with quick phrase checks.
+- **Personalization & Accessibility:** Includes a one-tap Demo Account preview, customizable study reminders, subtle sound effects with volume control, and full Dark Mode support.
 
-1. `flutter pub get`
-2. Firebase console → **Build → AI Logic**: enable the Gemini Developer API for the project,
-   otherwise generation silently falls back to the local parser.
-3. Publish the security rules (owner-only access to `users/{uid}/**`):
+## Tech Stack
+
+- **Framework:** Flutter 3.50 / Dart 3.14 (Material 3)
+- **Backend:** Firebase Authentication & Cloud Firestore
+- **AI Integration:** Firebase AI Logic (`firebase_ai`) with offline local-parser fallback
+- **PDF Engine:** Syncfusion Flutter PDF Viewer & PDF Text Extractor
+
+## Local Setup
+
+1. Install the Flutter SDK and Android toolchain, then fetch dependencies:
    ```bash
    firebase deploy --only firestore:rules
    ```
